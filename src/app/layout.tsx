@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { AntdRegistry } from '@ant-design/nextjs-registry';
+import { ConfigProvider, Layout } from 'antd';
 import "./globals.css";
 import Navbar from "./Navbar";
 
@@ -18,8 +20,17 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <Navbar />
-        <main>{children}</main>
+        <ConfigProvider
+          theme={{
+            token: {
+              colorPrimary: '#00b96b',
+              borderRadius: 2,
+            },
+          }}
+        >
+          <Navbar />
+          <AntdRegistry>{children}</AntdRegistry>
+        </ConfigProvider>
       </body>
     </html>
   );
