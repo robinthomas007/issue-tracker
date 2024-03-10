@@ -1,6 +1,6 @@
 'use client'
 import React, { useEffect, useState } from 'react'
-import { Card } from 'antd';
+import { Card, Typography } from 'antd';
 import { Row, Layout, Col, Button } from 'antd';
 import CreateIssueModal from './createIssue'
 import ViewIssueModal from './viewIssue';
@@ -9,6 +9,12 @@ import { IoMdEye } from "react-icons/io";
 import { useDrag, useDrop } from 'react-dnd';
 import { Empty } from 'antd';
 import axios from 'axios';
+import Stats from "./../../../components/stats";
+
+
+const { Title } = Typography;
+
+const { Sider } = Layout
 
 export interface IssueProps {
   id: number,
@@ -33,7 +39,7 @@ const DraggableListItem = ({ item, type, editIssue, handleIssueView }: any) => {
   </div>
 
   return (
-    <Card ref={drag} key={item.id} title={cardHeader} bordered={false} className='max-h-48 min-h-48' style={{ marginBottom: 10 }}>
+    <Card ref={drag} key={item.id} title={cardHeader} bordered={false} className='max-h-48 min-h-48 my-2' style={{ marginTop: 5 }}>
       <p className='overflow-auto max-h-16 cursor-pointer' onDoubleClick={() => handleIssueView(item)}>
         {item.description}
       </p>
@@ -41,7 +47,7 @@ const DraggableListItem = ({ item, type, editIssue, handleIssueView }: any) => {
   );
 };
 
-function IssueList() {
+function IssueList({ projectId }: { projectId: string }) {
   const [issues, setIssues] = useState<Array<IssueProps>>([])
   const [isViewModalOpen, setIsViewModalOpen] = useState<boolean>(false)
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
@@ -54,7 +60,7 @@ function IssueList() {
   const fetchIssues = async () => {
     try {
       try {
-        const response = await axios.get('/api/issues');
+        const response = await axios.get(`/api/projects/${projectId}/issues`);
         setIssues(response.data)
       } catch (e) {
         console.log(e)
@@ -142,31 +148,51 @@ function IssueList() {
     <>
       {isModalOpen && <CreateIssueModal issue={editIssues} isModalOpen={isModalOpen} handleOk={handleOk} handleCancel={handleCancel} />}
       {isViewModalOpen && <ViewIssueModal issue={editIssues} isModalOpen={isViewModalOpen} handleCancel={handleCancelView} />}
-
-      <Row justify={'end'} className='pb-4'>
+      <Row justify={'space-between'} className='pb-4'>
+        <Col>
+          <Title level={2}>Sedin Automation Tool</Title>
+        </Col>
         <Col>
           <Button type='primary' onClick={() => setIsModalOpen(true)}>Create Issue</Button>
         </Col>
       </Row>
       <Row gutter={16}>
-        <Col span={8} ref={open}>
-          <div className='inline bg-red-600 text-white p-1 font-semibold'>Selected for development</div>
+        <Col span={20} ref={open}>
+          <Stats />
+        </Col>
+      </Row>
+      <Row gutter={16}>
+        <Col span={4} ref={open}>
+          {/* <div className='inline bg-red-600 text-white p-1 font-semibold'>Selected for development</div> */}
           <div className="w-full max-w bg-gray-100 border border-gray-200 rounded-lg shadow sm:p-2 min-h-30 h-30">
             {renderIssueCard('OPEN')}
           </div>
         </Col>
-        <Col span={8} ref={inprogress}>
-          <div className='inline bg-orange-600 text-white p-1 font-semibold'>Work in progress</div>
+        <Col span={4} ref={inprogress}>
+          {/* <div className='inline bg-orange-600 text-white p-1 font-semibold'>Work in progress</div> */}
           <div className="w-full max-w bg-gray-100 border border-gray-200 rounded-lg shadow sm:p-2 min-h-30 h-30">
             {renderIssueCard('IN_PROGRESS')}
           </div>
         </Col>
-        <Col span={8} ref={close}>
-          <div className='inline bg-green-600 text-white p-1 font-semibold'>Redy to Deploy</div>
+        <Col span={4} ref={close}>
+          {/* <div className='inline bg-green-600 text-white p-1 font-semibold'>Redy to Deploy</div> */}
           <div className="w-full max-w bg-gray-100 border border-gray-200 rounded-lg shadow sm:p-2 min-h-30">
             {renderIssueCard('CLOSED')}
           </div>
         </Col>
+        <Col span={4} ref={close}>
+          {/* <div className='inline bg-green-600 text-white p-1 font-semibold'>Redy to Deploy</div> */}
+          <div className="w-full max-w bg-gray-100 border border-gray-200 rounded-lg shadow sm:p-2 min-h-30">
+            {renderIssueCard('CLOSED')}
+          </div>
+        </Col>
+        <Col span={4} ref={close}>
+          {/* <div className='inline bg-green-600 text-white p-1 font-semibold'>Redy to Deploy</div> */}
+          <div className="w-full max-w bg-gray-100 border border-gray-200 rounded-lg shadow sm:p-2 min-h-30">
+            {renderIssueCard('CLOSED')}
+          </div>
+        </Col>
+        <Col span={4}></Col>
       </Row>
     </>
   )

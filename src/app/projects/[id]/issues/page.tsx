@@ -4,11 +4,9 @@ import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import IssueList from './IssueList';
 
-const { Content } = Layout;
+const { Content, Sider } = Layout;
 
-
-function IssuePage() {
-
+function IssuePage({ params }: { params: { id: string } }) {
   return (
     <Layout>
       <Content className='bg-white' style={{
@@ -16,7 +14,7 @@ function IssuePage() {
         minHeight: '100%',
       }}>
         <DndProvider backend={HTML5Backend}>
-          <IssueList />
+          <IssueList projectId={params.id} />
         </DndProvider>
       </Content>
     </Layout>

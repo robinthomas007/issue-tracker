@@ -20,10 +20,23 @@ model Issue {
   status      Status   @default(OPEN)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  Project     Project? @relation(fields: [projectId], references: [id])
+  projectId   Int?
 }
 
 enum Status {
+  SELECTED
   OPEN
   IN_PROGRESS
+  TESTING
   CLOSED
+}
+
+model Project {
+  id          Int      @id @default(autoincrement())
+  name        String   @db.VarChar(255)
+  description String   @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  issues      Issue[]
 }
