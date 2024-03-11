@@ -5,16 +5,17 @@ import IssueSchemaData from '@prisma/client'
 
 const createIssueSchema = z.object({
   title: z.string().min(1).max(255),
-  description: z.string().min(1)
+  description: z.string().min(1),
 })
 
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest, params: { params: { projectId: string } }) {
+  const projectId = Number(params.params.projectId);
   const body = await request.json()
   const validation = createIssueSchema.safeParse(body)
   if (!validation.success)
     return NextResponse.json(validation.error.format(), { status: 400 })
   const newIssue = await prisma.issue.create({
-    data: { title: body.title, description: body.description }
+    data: { title: body.title, description: body.description, projectId: projectId }
   })
   return NextResponse.json(newIssue, { status: 201 })
 }
@@ -23,8 +24,12 @@ export async function GET(request: NextRequest, params: { params: { projectId: s
 
   const projectId = Number(params.params.projectId);
 
-  const issues = await prisma.issue.findMany({
-    where: { projectId: projectId },
+  const project = await prisma.project.findUnique({
+    where: { id: projectId },
+    include: {
+      issues: true
+    }
   })
-  return NextResponse.json(issues, { status: 200 })
+
+  return NextResponse.json(project, { status: 200 })
 }

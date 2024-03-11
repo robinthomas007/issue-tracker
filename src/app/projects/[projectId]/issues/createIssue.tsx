@@ -3,6 +3,8 @@ import { Space, Modal, Typography, Button, Form } from 'antd';
 import { Input } from 'antd';
 import axios from 'axios';
 import { IssueProps } from './IssueList'
+import { useParams } from 'next/navigation'
+
 const { TextArea } = Input;
 const { Text } = Typography;
 
@@ -16,6 +18,7 @@ interface IssueModalProps {
 const CreateIssueModal: React.FC<IssueModalProps> = ({ isModalOpen, handleOk, handleCancel, issue }) => {
 
   const [form] = Form.useForm()
+  const params = useParams<{ projectId: string }>()
 
   useEffect(() => {
     if (issue && Object.keys(issue).length !== 0) {
@@ -26,13 +29,13 @@ const CreateIssueModal: React.FC<IssueModalProps> = ({ isModalOpen, handleOk, ha
   const onFinish = async (values: any) => {
     if (issue?.id) {
       try {
-        await axios.patch(`/api/issues/${issue.id}`, values)
+        await axios.patch(`/api/projects/${params.projectId}/issues/${issue.id}`, values)
       } catch (e) {
         console.log(e)
       }
     } else {
       try {
-        await axios.post('/api/issues', values)
+        await axios.post(`/api/projects/${params.projectId}/issues`, values)
       } catch (e) {
         console.log(e)
       }

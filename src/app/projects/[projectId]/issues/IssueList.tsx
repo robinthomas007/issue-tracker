@@ -23,6 +23,13 @@ export interface IssueProps {
   status: string
 }
 
+export interface ProjectProps {
+  id: number,
+  name: string,
+  description: string,
+  issues: Array<IssueProps>
+}
+
 const DraggableListItem = ({ item, type, editIssue, handleIssueView }: any) => {
 
   const [, drag] = useDrag({
@@ -39,7 +46,7 @@ const DraggableListItem = ({ item, type, editIssue, handleIssueView }: any) => {
   </div>
 
   return (
-    <Card ref={drag} key={item.id} title={cardHeader} bordered={false} className='max-h-48 min-h-48 my-2' style={{ marginTop: 5 }}>
+    <Card ref={drag} key={item.id} title={cardHeader} bordered={false} className='min-h-72 my-2 max-h-72' style={{ marginTop: 5 }}>
       <p className='overflow-auto max-h-16 cursor-pointer' onDoubleClick={() => handleIssueView(item)}>
         {item.description}
       </p>
@@ -48,6 +55,7 @@ const DraggableListItem = ({ item, type, editIssue, handleIssueView }: any) => {
 };
 
 function IssueList({ projectId }: { projectId: string }) {
+  const [project, setProject] = useState<ProjectProps | null>(null)
   const [issues, setIssues] = useState<Array<IssueProps>>([])
   const [isViewModalOpen, setIsViewModalOpen] = useState<boolean>(false)
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
@@ -61,7 +69,8 @@ function IssueList({ projectId }: { projectId: string }) {
     try {
       try {
         const response = await axios.get(`/api/projects/${projectId}/issues`);
-        setIssues(response.data)
+        setProject(response.data)
+        setIssues(response.data.issues)
       } catch (e) {
         console.log(e)
       }
@@ -116,12 +125,19 @@ function IssueList({ projectId }: { projectId: string }) {
 
   const updateStatus = async (status: string, item: IssueProps) => {
     try {
-      await axios.patch(`/api/issues/${item.id}/status`, { status: status })
+      await axios.patch(`/api/projects/${projectId}/issues/${item.id}/status`, { status: status })
       fetchIssues()
     } catch (e) {
       console.log(e)
     }
   }
+
+  const [, selected] = useDrop({
+    accept: '*',
+    drop: (item: IssueProps) => {
+      updateStatus('SELECTED', item)
+    }
+  });
 
   const [, open] = useDrop({
     accept: '*',
@@ -134,6 +150,13 @@ function IssueList({ projectId }: { projectId: string }) {
     accept: '*',
     drop: (item: IssueProps) => {
       updateStatus('IN_PROGRESS', item)
+    }
+  });
+
+  const [, test] = useDrop({
+    accept: '*',
+    drop: (item: IssueProps) => {
+      updateStatus('TESTING', item)
     }
   });
 
@@ -150,45 +173,40 @@ function IssueList({ projectId }: { projectId: string }) {
       {isViewModalOpen && <ViewIssueModal issue={editIssues} isModalOpen={isViewModalOpen} handleCancel={handleCancelView} />}
       <Row justify={'space-between'} className='pb-4'>
         <Col>
-          <Title level={2}>Sedin Automation Tool</Title>
+          <Title level={2}>{project?.name}</Title>
         </Col>
         <Col>
           <Button type='primary' onClick={() => setIsModalOpen(true)}>Create Issue</Button>
         </Col>
       </Row>
       <Row gutter={16}>
-        <Col span={20} ref={open}>
+        <Col span={20}>
           <Stats />
         </Col>
       </Row>
       <Row gutter={16}>
+        <Col span={4} ref={selected}>
+          <div style={{ minHeight: '600px' }} className="w-full max-w bg-gray-100 border border-gray-200 rounded-lg shadow sm:p-2 min-h-30 h-30">
+            {renderIssueCard('SELECTED')}
+          </div>
+        </Col>
         <Col span={4} ref={open}>
-          {/* <div className='inline bg-red-600 text-white p-1 font-semibold'>Selected for development</div> */}
-          <div className="w-full max-w bg-gray-100 border border-gray-200 rounded-lg shadow sm:p-2 min-h-30 h-30">
+          <div style={{ minHeight: '600px' }} className="w-full max-w bg-gray-100 border border-gray-200 rounded-lg shadow sm:p-2 min-h-30 h-30">
             {renderIssueCard('OPEN')}
           </div>
         </Col>
         <Col span={4} ref={inprogress}>
-          {/* <div className='inline bg-orange-600 text-white p-1 font-semibold'>Work in progress</div> */}
-          <div className="w-full max-w bg-gray-100 border border-gray-200 rounded-lg shadow sm:p-2 min-h-30 h-30">
+          <div style={{ minHeight: '600px' }} className="w-full max-w bg-gray-100 border border-gray-200 rounded-lg shadow sm:p-2 min-h-30">
             {renderIssueCard('IN_PROGRESS')}
           </div>
         </Col>
-        <Col span={4} ref={close}>
-          {/* <div className='inline bg-green-600 text-white p-1 font-semibold'>Redy to Deploy</div> */}
-          <div className="w-full max-w bg-gray-100 border border-gray-200 rounded-lg shadow sm:p-2 min-h-30">
-            {renderIssueCard('CLOSED')}
+        <Col span={4} ref={test}>
+          <div style={{ minHeight: '600px' }} className="w-full max-w bg-gray-100 border border-gray-200 rounded-lg shadow sm:p-2 min-h-30">
+            {renderIssueCard('TESTING')}
           </div>
         </Col>
         <Col span={4} ref={close}>
-          {/* <div className='inline bg-green-600 text-white p-1 font-semibold'>Redy to Deploy</div> */}
-          <div className="w-full max-w bg-gray-100 border border-gray-200 rounded-lg shadow sm:p-2 min-h-30">
-            {renderIssueCard('CLOSED')}
-          </div>
-        </Col>
-        <Col span={4} ref={close}>
-          {/* <div className='inline bg-green-600 text-white p-1 font-semibold'>Redy to Deploy</div> */}
-          <div className="w-full max-w bg-gray-100 border border-gray-200 rounded-lg shadow sm:p-2 min-h-30">
+          <div style={{ minHeight: '600px' }} className="w-full max-w bg-gray-100 border border-gray-200 rounded-lg shadow sm:p-2 min-h-30">
             {renderIssueCard('CLOSED')}
           </div>
         </Col>

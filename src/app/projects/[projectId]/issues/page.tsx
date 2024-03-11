@@ -6,7 +6,7 @@ import IssueList from './IssueList';
 
 const { Content, Sider } = Layout;
 
-function IssuePage({ params }: { params: { id: string } }) {
+function IssuePage({ params }: { params: { projectId: string } }) {
   return (
     <Layout>
       <Content className='bg-white' style={{
@@ -14,7 +14,7 @@ function IssuePage({ params }: { params: { id: string } }) {
         minHeight: '100%',
       }}>
         <DndProvider backend={HTML5Backend}>
-          <IssueList projectId={params.id} />
+          <IssueList projectId={params.projectId} />
         </DndProvider>
       </Content>
     </Layout>

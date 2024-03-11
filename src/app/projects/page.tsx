@@ -1,7 +1,8 @@
 'use client'
 import React, { useEffect, useState } from 'react'
-import Stats from "./components/stats";
+import Stats from "../components/stats";
 import { Row, Layout, Col, Button, Typography, Table } from 'antd';
+import CreateProjectModal from './createProject'
 import axios from 'axios';
 import type { TableProps } from 'antd';
 import Link from 'next/link'
@@ -85,7 +86,21 @@ export default function Home() {
         padding: 24,
         minHeight: '100%',
       }}>
-        <h1>Login page</h1>
+        {isModalOpen && <CreateProjectModal project={editProject} isModalOpen={isModalOpen} handleOk={handleOk} handleCancel={handleCancel} />}
+
+        <Row justify={'space-between'} className='py-4'>
+          <Col>
+            <Title level={2}>Projects</Title>
+          </Col>
+          <Col>
+            <Button type="primary" onClick={() => setIsModalOpen(true)}>Create Project</Button>
+          </Col>
+        </Row>
+        <Row>
+          <Col>
+            <Table columns={columns} dataSource={projects || []} />
+          </Col>
+        </Row>
       </Content>
     </Layout>
   );
