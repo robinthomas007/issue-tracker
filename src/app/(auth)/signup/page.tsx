@@ -2,15 +2,19 @@
 import React from 'react';
 import { Button, Checkbox, Form, type FormProps, Input, Layout, Card, Row, Col } from 'antd';
 const { Content } = Layout
+import { register } from "@/actions/signup";
 
 type FieldType = {
-  username?: string;
+  name?: string;
   password?: string;
   email?: string;
 };
 
-const onFinish: FormProps<FieldType>["onFinish"] = (values) => {
+const onFinish: FormProps<any>["onFinish"] = (values) => {
   console.log('Success:', values);
+  register(values).then((data) => {
+    console.log(data, "datadatadatadatadatadata111")
+  }).catch((e) => console.log(e, "Something went wrong"));
 };
 
 const onFinishFailed: FormProps<FieldType>["onFinishFailed"] = (errorInfo) => {
@@ -37,9 +41,9 @@ const Signup: React.FC = () => (
               autoComplete="off"
             >
               <Form.Item<FieldType>
-                label="Username"
-                name="username"
-                rules={[{ required: true, message: 'Please input your username!' }]}
+                label="Name"
+                name="name"
+                rules={[{ required: true, message: 'Please input your name!' }]}
               >
                 <Input />
               </Form.Item>

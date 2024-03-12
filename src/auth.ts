@@ -11,16 +11,26 @@ export const {
   signIn,
   signOut,
 } = NextAuth({
+  pages: {
+    signIn: "/login",
+    error: "/error",
+  },
+  events: {
+    async linkAccount({ user }) {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { emailVerified: new Date() }
+      })
+    }
+  },
   callbacks: {
     async signIn({ user, account }) {
       // Allow OAuth without email verification
       if (account?.provider !== "credentials") return true;
       if (user.id) {
         const existingUser = await getUserById(user.id);
+        if (!existingUser?.emailVerified) return false;
       }
-
-      // Prevent sign in without email verification
-      // if (!existingUser?.emailVerified) return false;
 
       // if (existingUser.isTwoFactorEnabled) {
       // const twoFactorConfirmation = await getTwoFactorConfirmationByUserId(existingUser.id);
