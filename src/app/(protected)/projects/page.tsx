@@ -1,6 +1,5 @@
 'use client'
 import React, { useEffect, useState } from 'react'
-import Stats from "../components/stats";
 import { Row, Layout, Col, Button, Typography, Table } from 'antd';
 import CreateProjectModal from './createProject'
 import axios from 'axios';

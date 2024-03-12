@@ -9,7 +9,7 @@ import { IoMdEye } from "react-icons/io";
 import { useDrag, useDrop } from 'react-dnd';
 import { Empty } from 'antd';
 import axios from 'axios';
-import Stats from "./../../../components/stats";
+import Stats from "@/components/stats";
 
 
 const { Title } = Typography;

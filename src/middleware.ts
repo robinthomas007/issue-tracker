@@ -16,6 +16,12 @@ export default auth((req) => {
 
   console.log(isLoggedIn, "isLoggedInisLoggedInisLoggedInisLoggedInisLoggedInisLoggedIn")
 
+  console.log(nextUrl.pathname, "nextUrl.pathnamenextUrl.pathnamenextUrl.pathname")
+
+  if (nextUrl.pathname === '/') {
+    return Response.redirect(new URL("/login", nextUrl));
+  }
+
   const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix);
   const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
   const isAuthRoute = authRoutes.includes(nextUrl.pathname);
