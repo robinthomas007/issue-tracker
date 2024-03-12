@@ -9,6 +9,7 @@ import CarHeader from '../_components/carHeader'
 import CardFooter from '../_components/cardFooter'
 import CardMessage from '../_components/message'
 import { useSearchParams } from "next/navigation";
+import Link from 'next/link'
 
 type FieldType = {
   // username?: string;
@@ -88,9 +89,12 @@ const Login: React.FC<FieldType> = () => {
             >
               <Input.Password />
             </Form.Item>
+            <Button type="link" style={{ padding: 0 }}>
+              <Link href='/reset' className='text-blue-900'>Reset password</Link>
+            </Button>
 
             <Form.Item >
-              <Button type="primary" htmlType="submit" className='w-full mt-4'>
+              <Button disabled={isPending} type="primary" htmlType="submit" className='w-full mt-4'>
                 Login
               </Button>
             </Form.Item>

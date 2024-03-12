@@ -1,31 +1,33 @@
 'use client'
+import { useEffect, useState, useTransition } from "react";
 import React from 'react';
-import { useState, useTransition } from "react";
 import { Button, Checkbox, Form, type FormProps, Input, Layout, Card, Row, Col } from 'antd';
-const { Content } = Layout
-import { register } from "@/actions/signup";
+import { reset } from "@/actions/reset";
+import { DEFAULT_LOGIN_REDIRECT } from '@/routes'
 import CarHeader from '../_components/carHeader'
 import CardFooter from '../_components/cardFooter'
 import CardMessage from '../_components/message'
+import { useSearchParams } from "next/navigation";
+import Link from 'next/link'
 
 type FieldType = {
-  name?: string;
-  password?: string;
   email?: string;
 };
 
+const Reset: React.FC<FieldType> = () => {
 
-const Signup: React.FC = () => {
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
   const [form] = Form.useForm();
+  const searchParams = useSearchParams();
 
   const onFinish: FormProps<any>["onFinish"] = (values) => {
     setError("");
     setSuccess("");
+
     startTransition(() => {
-      register(values)
+      reset(values)
         .then((data) => {
           if (data?.error) {
             form.resetFields();
@@ -36,7 +38,8 @@ const Signup: React.FC = () => {
             form.resetFields();
             setSuccess(data.success);
           }
-        });
+        })
+        .catch(() => setError("Something went wrong"));
     });
   };
 
@@ -46,8 +49,8 @@ const Signup: React.FC = () => {
 
   return (
     <Row justify={'center'} className='w-full'>
-      <Col span={6} >
-        <Card title={<CarHeader title="Register" />} bordered={true} className='w-full shadow-xl'>
+      <Col span={6}>
+        <Card title={<CarHeader title="Reset Password" />} bordered={true} className='w-full shadow-xl'>
           <Form
             name="basic"
             style={{ maxWidth: 600 }}
@@ -57,18 +60,7 @@ const Signup: React.FC = () => {
             autoComplete="off"
             form={form}
           >
-            <Form.Item<FieldType>
-              label="Name"
-              name="name"
-              rules={[{ required: true, message: 'Please input your name!' }]}
-              labelCol={{ span: 24 }}
-              style={{ marginBottom: 0 }}
-              className='font-semibold'
-            >
-              <Input />
-            </Form.Item>
-
-            <Form.Item<FieldType>
+            <Form.Item
               label="Email"
               name="email"
               rules={[{ required: true, message: 'Please input your email!' }]}
@@ -79,29 +71,20 @@ const Signup: React.FC = () => {
               <Input />
             </Form.Item>
 
-            <Form.Item<FieldType>
-              label="Password"
-              name="password"
-              rules={[{ required: true, message: 'Please input your password!' }]}
-              labelCol={{ span: 24 }}
-              style={{ marginBottom: 10 }}
-              className='font-semibold'
-            >
-              <Input.Password />
-            </Form.Item>
-
-            <Form.Item>
-              <Button disabled={isPending} type="primary" htmlType="submit" className='w-full my-4'>
-                Register
+            <Form.Item >
+              <Button disabled={isPending} type="primary" htmlType="submit" className='w-full mt-4'>
+                Reset Password
               </Button>
             </Form.Item>
           </Form>
           {(success || error) && <CardMessage message={success ? success : error} type={success ? 'success' : 'error'} />}
-          <CardFooter link="/login" />
+          <div className="text-center">
+            <Link href='/login' className='text-blue-500 hover:text-blue-900'>Back to login</Link>
+          </div>
         </Card>
       </Col>
-    </Row >
+    </Row>
   )
 }
 
-export default Signup;
+export default Reset;
