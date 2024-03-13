@@ -10,7 +10,11 @@ import { useDrag, useDrop } from 'react-dnd';
 import { Empty } from 'antd';
 import axios from 'axios';
 import Stats from "@/components/stats";
-
+import { Space, Modal, Form, Input } from 'antd';
+import IssueDetails from '@/components/issues/issueDetails'
+import IssueActionForm from '@/components/issues/issueActionForm'
+const { TextArea } = Input;
+const { Text } = Typography;
 
 const { Title } = Typography;
 
@@ -46,8 +50,8 @@ const DraggableListItem = ({ item, type, editIssue, handleIssueView }: any) => {
   </div>
 
   return (
-    <Card ref={drag} key={item.id} title={cardHeader} bordered={false} className='min-h-72 my-2 max-h-72' style={{ marginTop: 5 }}>
-      <p className='overflow-auto max-h-16 cursor-pointer' onDoubleClick={() => handleIssueView(item)}>
+    <Card size="small" ref={drag} key={item.id} title={cardHeader} bordered={false} className='min-h-48 my-2 max-h-48' style={{ marginTop: 5, padding: 0 }}>
+      <p className='overflow-auto max-h-28 cursor-pointer' onClick={() => handleIssueView(item)}>
         {item.description}
       </p>
     </Card>
@@ -60,6 +64,8 @@ function IssueList({ projectId }: { projectId: string }) {
   const [isViewModalOpen, setIsViewModalOpen] = useState<boolean>(false)
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
   const [editIssues, setEditIssues] = useState<IssueProps | null>(null)
+
+  const [form] = Form.useForm()
 
   useEffect(() => {
     fetchIssues();
@@ -100,8 +106,9 @@ function IssueList({ projectId }: { projectId: string }) {
   }
 
   const handleIssueView = (issue: IssueProps) => {
+    console.log("came")
     setEditIssues(issue)
-    setIsViewModalOpen(true)
+    // setIsViewModalOpen(true)
   }
 
   const renderIssueCard = (status: string) => {
@@ -179,39 +186,41 @@ function IssueList({ projectId }: { projectId: string }) {
           <Button type='primary' onClick={() => setIsModalOpen(true)}>Create Issue</Button>
         </Col>
       </Row>
-      <Row gutter={16}>
-        <Col span={20}>
-          <Stats />
-        </Col>
-      </Row>
-      <Row gutter={16}>
-        <Col span={4} ref={selected}>
-          <div style={{ minHeight: '600px' }} className="w-full max-w bg-gray-100 border border-gray-200 rounded-lg shadow sm:p-2 min-h-30 h-30">
-            {renderIssueCard('SELECTED')}
-          </div>
-        </Col>
-        <Col span={4} ref={open}>
-          <div style={{ minHeight: '600px' }} className="w-full max-w bg-gray-100 border border-gray-200 rounded-lg shadow sm:p-2 min-h-30 h-30">
-            {renderIssueCard('OPEN')}
-          </div>
-        </Col>
-        <Col span={4} ref={inprogress}>
-          <div style={{ minHeight: '600px' }} className="w-full max-w bg-gray-100 border border-gray-200 rounded-lg shadow sm:p-2 min-h-30">
-            {renderIssueCard('IN_PROGRESS')}
-          </div>
-        </Col>
-        <Col span={4} ref={test}>
-          <div style={{ minHeight: '600px' }} className="w-full max-w bg-gray-100 border border-gray-200 rounded-lg shadow sm:p-2 min-h-30">
-            {renderIssueCard('TESTING')}
-          </div>
-        </Col>
-        <Col span={4} ref={close}>
-          <div style={{ minHeight: '600px' }} className="w-full max-w bg-gray-100 border border-gray-200 rounded-lg shadow sm:p-2 min-h-30">
-            {renderIssueCard('CLOSED')}
-          </div>
-        </Col>
-        <Col span={4}></Col>
-      </Row>
+
+      <div className="grid grid-cols-7 gap-2 my-8 max-h-40">
+        <Stats />
+        <div className='col-span-2 border-l-2 px-4'>
+          <Card title={project?.name}>
+            <p className='overflow-scroll max-h-24'>{project?.description} The Sedin ecosystem is an integrated collaborative of highly specialised divisions. We’re consultants, technologists and entrepreneurs with skin in the game, and create out of the box strategies for your growth.</p>
+          </Card>
+        </div>
+      </div>
+      <div className="grid grid-cols-7 gap-2">
+        <div ref={selected} style={{ minHeight: '600px' }} className="w-full max-w bg-gray-100 border border-gray-200 rounded-lg shadow sm:p-2 min-h-30 h-30">
+          <p className='text-gray-600 font-semibold px-1 py-1 uppercase'>Analysis</p>
+          {renderIssueCard('SELECTED')}
+        </div>
+        <div ref={open} style={{ minHeight: '600px' }} className="w-full max-w bg-gray-100 border border-gray-200 rounded-lg shadow sm:p-2 min-h-30 h-30">
+          <p className='text-gray-600 font-semibold px-1 py-1 uppercase'>To do</p>
+          {renderIssueCard('OPEN')}
+        </div>
+        <div ref={inprogress} style={{ minHeight: '600px' }} className="w-full max-w bg-gray-100 border border-gray-200 rounded-lg shadow sm:p-2 min-h-30">
+          <p className='text-gray-600 font-semibold px-1 py-1 uppercase'>In Progress</p>
+          {renderIssueCard('IN_PROGRESS')}
+        </div>
+        <div ref={test} style={{ minHeight: '600px' }} className="w-full max-w bg-gray-100 border border-gray-200 rounded-lg shadow sm:p-2 min-h-30">
+          <p className='text-gray-600 font-semibold px-1 py-1 uppercase'>Testing</p>
+          {renderIssueCard('TESTING')}
+        </div>
+        <div ref={close} style={{ minHeight: '600px' }} className="w-full max-w bg-gray-100 border border-gray-200 rounded-lg shadow sm:p-2 min-h-30">
+          <p className='text-gray-600 font-semibold px-1 py-1 uppercase'>Done</p>
+          {renderIssueCard('CLOSED')}
+        </div>
+        {editIssues && <div className='col-span-2 border-l-2 p-4'>
+          <IssueActionForm editIssues={editIssues} />
+          <IssueDetails issue={editIssues} />
+        </div>}
+      </div >
     </>
   )
 }

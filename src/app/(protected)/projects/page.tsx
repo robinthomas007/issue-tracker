@@ -34,6 +34,7 @@ const columns: TableProps<ProjectProps>['columns'] = [
     title: 'Description',
     dataIndex: 'description',
     key: 'description',
+    width: 900
   },
 
 
