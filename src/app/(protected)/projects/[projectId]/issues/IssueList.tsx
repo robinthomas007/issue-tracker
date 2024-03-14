@@ -1,10 +1,11 @@
 'use client'
 import React, { useEffect, useState } from 'react'
 import { Card, Typography } from 'antd';
-import { Row, Layout, Col, Button } from 'antd';
+import { Row, Layout, Col, Button, Dropdown } from 'antd';
 import CreateIssueModal from './createIssue'
 import ViewIssueModal from './viewIssue';
 import { FaEdit } from "react-icons/fa";
+import { MdOutlineEdit } from "react-icons/md";
 import { IoMdEye } from "react-icons/io";
 import { useDrag, useDrop } from 'react-dnd';
 import { Empty } from 'antd';
@@ -13,6 +14,9 @@ import Stats from "@/components/stats";
 import { Space, Modal, Form, Input } from 'antd';
 import IssueDetails from '@/components/issues/issueDetails'
 import IssueActionForm from '@/components/issues/issueActionForm'
+import Image from 'next/image'
+import { CiUser } from "react-icons/ci";
+
 const { TextArea } = Input;
 const { Text } = Typography;
 
@@ -42,6 +46,7 @@ export interface ProjectProps {
   name: string,
   description: string,
   issues: Array<IssueProps>
+  users: any
 }
 
 const DraggableListItem = ({ item, type, editIssue, handleIssueView }: any) => {
@@ -53,17 +58,21 @@ const DraggableListItem = ({ item, type, editIssue, handleIssueView }: any) => {
 
   const cardHeader = <div className='flex text-slate-600 justify-between align-middle'>
     <span>{item.title}</span>
-    <span className='flex justify-between align-middle'>
-      <FaEdit onClick={() => editIssue(item)} />
-      {/* <IoMdEye /> */}
+    <span className='flex justify-start align-middle'>
+      <MdOutlineEdit onClick={() => editIssue(item)} />
     </span>
   </div>
 
+  console.log(item, "itemitem")
+
   return (
-    <Card size="small" ref={drag} key={item.id} title={cardHeader} bordered={false} className='min-h-48 my-2 max-h-48' style={{ marginTop: 5, padding: 0 }}>
+    <Card size="small" ref={drag} key={item.id} title={cardHeader} bordered={false} className='min-h-60 my-2 max-h-60' style={{ marginTop: 5, padding: 0 }}>
       <p className='overflow-auto max-h-28 cursor-pointer' onClick={() => handleIssueView(item)}>
         {item.description}
       </p>
+      {item.assignee && <div className='flex items-center mt-3rounded absolute bottom-2 w-48'>
+        <span><Image loader={() => item.assignee.image} width={30} height={10} className='rounded-full hover:border border-green-400' src={item.assignee.image} alt='user' /></span>
+      </div>}
     </Card>
   );
 };
@@ -184,6 +193,29 @@ function IssueList({ projectId }: { projectId: string }) {
     }
   });
 
+  const getProjectUsers = () => {
+
+    const len = project?.users.length
+    const imgCount = 1
+
+    const items = project?.users.slice(imgCount).map((user: any) => ({
+      'key': user.id,
+      'label': <div className='flex items-center'>
+        <span><Image loader={() => user.image} width={40} height={10} className='rounded-full hover:border border-green-400' src={user.image} alt='user' /></span>
+        <span className='ml-2'>{user.name}</span>
+      </div>
+    }))
+
+    return project?.users.map((user: any, i: number) => <div key={user.id} className='w-20' style={{ width: 40 }}>
+      {i + 1 <= imgCount && <Image loader={() => user.image} width={100} height={10} className='rounded-full hover:border border-green-400' src={user.image} alt='user' />}
+      {i + 1 > imgCount && <div className=''>
+        <Dropdown menu={{ items }} placement="bottomLeft" arrow>
+          <Button type='link'>+ {len - 1} more</Button>
+        </Dropdown>
+      </div>}
+    </div>)
+  }
+
   return (
     <>
       {isModalOpen && <CreateIssueModal issue={editIssues} isModalOpen={isModalOpen} handleOk={handleOk} handleCancel={handleCancel} />}
@@ -197,7 +229,23 @@ function IssueList({ projectId }: { projectId: string }) {
         </Col>
       </Row>
 
-      <div className="grid grid-cols-7 gap-2 my-8 max-h-40">
+      <Row justify={'start'} className='pb-2 items-center'>
+        <Col span={6}>
+          <Input placeholder='Search' />
+        </Col>
+        <Col span={11}>
+          <div className='flex justify-between'>
+            <div className='flex items-center ml-6'>
+              {getProjectUsers()}
+            </div>
+            <div>
+              <Button icon={<CiUser />} > Add Users</Button>
+            </div>
+          </div>
+        </Col>
+      </Row>
+
+      <div className="grid grid-cols-7 gap-2 mb-6 max-h-40">
         <Stats />
         <div className='col-span-2 border-l-2 px-4'>
           <Card title={project?.name}>

@@ -1,10 +1,14 @@
 'use client'
 import React, { useEffect, useState } from 'react'
-import { Row, Layout, Col, Button, Typography, Table } from 'antd';
+import { Row, Layout, Col, Button, Typography, Table, Dropdown, Space } from 'antd';
 import CreateProjectModal from './createProject'
 import axios from 'axios';
 import type { TableProps } from 'antd';
 import Link from 'next/link'
+import Image from 'next/image'
+import { MdOutlineEdit } from "react-icons/md";
+import { MdDeleteOutline } from "react-icons/md";
+import { CiUser } from "react-icons/ci";
 
 const { Title } = Typography
 const { Content } = Layout
@@ -13,6 +17,7 @@ export interface ProjectProps {
   id: number,
   name: string,
   description: string,
+  users: any
 }
 
 
@@ -34,8 +39,50 @@ const columns: TableProps<ProjectProps>['columns'] = [
     title: 'Description',
     dataIndex: 'description',
     key: 'description',
-    width: 900
   },
+
+  {
+    title: 'Users',
+    dataIndex: 'users',
+    key: 'users',
+    className: "flex min-h-18",
+    width: 300,
+    render: (_, project) => {
+      const len = project.users.length
+      if (len === 0) {
+        return <div className='min-h-11'>
+          <Button icon={<CiUser />} > Add Users</Button>
+        </div>
+      }
+      const imgCount = 1
+      const items = project.users.slice(imgCount).map((user: any) => ({
+        'key': user.id,
+        'label': <div className='flex items-center'>
+          <span><Image loader={() => user.image} width={40} height={10} className='rounded-full hover:border border-green-400' src={user.image} alt='user' /></span>
+          <span className='ml-2'>{user.name}</span>
+        </div>
+      }))
+
+      return project.users.map((user: any, i: number) => <div key={user.id} className='w-20' style={{ width: 40 }}>
+        {i + 1 <= imgCount && <Image loader={() => user.image} width={100} height={10} className='rounded-full hover:border border-green-400' src={user.image} alt='user' />}
+        {i + 1 > imgCount && <div className=''>
+          <Dropdown menu={{ items }} placement="bottomLeft" arrow>
+            <Button type='link'>+ {len - 1} more</Button>
+          </Dropdown>
+        </div>}
+      </div>)
+    }
+  },
+  {
+    title: "Action",
+    key: "action",
+    render: (_: any, project) => (
+      <Space size="middle">
+        <MdOutlineEdit />
+        <MdDeleteOutline />
+      </Space>
+    )
+  }
 
 
 ];

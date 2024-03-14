@@ -28,6 +28,7 @@ export async function GET(request: NextRequest, params: { params: { projectId: s
   const project = await prisma.project.findUnique({
     where: { id: projectId },
     include: {
+      users: true,
       issues: {
         include: {
           assignee: {
