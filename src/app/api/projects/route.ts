@@ -12,13 +12,27 @@ export async function POST(request: NextRequest) {
   const validation = createProjectSchemaValidation.safeParse(body)
   if (!validation.success)
     return NextResponse.json(validation.error.format(), { status: 400 })
-  const newProject = await prisma.project.create({
-    data: { name: body.name, description: body.description }
+
+  const assignedUsers = await prisma.user.findMany({
+    where: { email: { in: body.users, not: null } }
   })
+
+  const newProject = await prisma.project.create({
+    data: {
+      name: body.name, description: body.description, users: {
+        connect: assignedUsers.map(user => ({ id: user.id }))
+      }
+    }
+  })
+
   return NextResponse.json(newProject, { status: 201 })
 }
 
 export async function GET(request: NextRequest) {
-  const projects = await prisma.project.findMany()
+  const projects = await prisma.project.findMany({
+    include: {
+      users: true,
+    }
+  })
   return NextResponse.json(projects, { status: 200 })
 }

@@ -20,11 +20,21 @@ const { Title } = Typography;
 
 const { Sider } = Layout
 
+export interface AssigneeReporterProps {
+  name: string,
+  email: string,
+  image: string | null
+}
+
 export interface IssueProps {
   id: number,
   title: string,
   description: string,
   status: string
+  reporter: AssigneeReporterProps,
+  assignee: AssigneeReporterProps
+  reporterId: string,
+  assigneeId: string
 }
 
 export interface ProjectProps {

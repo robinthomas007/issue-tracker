@@ -4,6 +4,7 @@ import { Input } from 'antd';
 import axios from 'axios';
 import { IssueProps } from './IssueList'
 import { useParams } from 'next/navigation'
+import { useCurrentUser } from '@/hooks/use-current-user';
 
 const { TextArea } = Input;
 const { Text } = Typography;
@@ -20,6 +21,8 @@ const CreateIssueModal: React.FC<IssueModalProps> = ({ isModalOpen, handleOk, ha
   const [form] = Form.useForm()
   const params = useParams<{ projectId: string }>()
 
+  const user = useCurrentUser()
+
   useEffect(() => {
     if (issue && Object.keys(issue).length !== 0) {
       form.setFieldsValue({ id: issue.id, title: issue.title, description: issue.description })
@@ -27,15 +30,16 @@ const CreateIssueModal: React.FC<IssueModalProps> = ({ isModalOpen, handleOk, ha
   }, [issue]);
 
   const onFinish = async (values: any) => {
+    const data = { ...values, reporterId: user?.id }
     if (issue?.id) {
       try {
-        await axios.patch(`/api/projects/${params.projectId}/issues/${issue.id}`, values)
+        await axios.patch(`/api/projects/${params.projectId}/issues/${issue.id}`, data)
       } catch (e) {
         console.log(e)
       }
     } else {
       try {
-        await axios.post(`/api/projects/${params.projectId}/issues`, values)
+        await axios.post(`/api/projects/${params.projectId}/issues`, data)
       } catch (e) {
         console.log(e)
       }

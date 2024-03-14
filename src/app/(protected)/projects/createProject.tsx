@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Space, Modal, Typography, Button, Form } from 'antd';
+import { Space, Modal, Typography, Button, Form, Select } from 'antd';
 import { Input } from 'antd';
 import axios from 'axios';
 import { ProjectProps } from './page'
 const { TextArea } = Input;
 const { Text } = Typography;
+import CustomSelect from '@/components/common/CustomSelect'
 
 interface ProjectModalProps {
   isModalOpen: boolean,
@@ -14,6 +15,9 @@ interface ProjectModalProps {
 }
 
 const CreateIssueModal: React.FC<ProjectModalProps> = ({ isModalOpen, handleOk, handleCancel, project }) => {
+
+  const [search, setSearch] = useState<string>();
+  const [assignee, setAssignee] = useState<string>();
 
   const [form] = Form.useForm()
 
@@ -37,11 +41,15 @@ const CreateIssueModal: React.FC<ProjectModalProps> = ({ isModalOpen, handleOk, 
         console.log(e)
       }
     }
-    handleOk()
+    // handleOk()
   };
 
   const onFinishFailed = (errorInfo: any) => {
     console.log('Failed:', errorInfo);
+  };
+
+  const handleAsigneeSearch = (newValue: string) => {
+    setSearch(newValue)
   };
 
   return (
@@ -85,6 +93,22 @@ const CreateIssueModal: React.FC<ProjectModalProps> = ({ isModalOpen, handleOk, 
         >
           <TextArea rows={6} />
         </Form.Item>
+        <Form.Item
+          label="Users"
+          name="users"
+          className="flex flex-col space-y-4 mb-0"
+        >
+          <CustomSelect
+            value={assignee}
+            search={search}
+            mode='multiple'
+            onSearch={handleAsigneeSearch}
+            placeholder='search users'
+            notFoundContent={<p>Not Found</p>}
+          />
+
+        </Form.Item>
+
       </Form>
     </Modal>
   );

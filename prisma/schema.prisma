@@ -48,10 +48,7 @@ model Project {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   issues      Issue[]
-  User        User?    @relation(fields: [userId], references: [id])
-  userId      String?
-
-  @@index([userId])
+  users       User[]
 }
 
 model Account {

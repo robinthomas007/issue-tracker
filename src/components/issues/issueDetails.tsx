@@ -1,17 +1,28 @@
 import React, { useEffect, useState } from 'react'
-import { Card, Select } from 'antd'
-import { userListByEmail } from '@/actions/users'
-import { assignIssue } from '@/actions/issues'
-import type { SelectProps } from 'antd';
-import { error } from 'console';
+import { Card } from 'antd'
+import { assignIssue, ReporterIssue } from '@/actions/issues'
 import { IssueProps } from '@/app/(protected)/projects/[projectId]/issues/IssueList';
+import { useCurrentUser } from '@/hooks/use-current-user';
+import CustomSelect from '@/components/common/CustomSelect'
 
 const IssueDetails = ({ issue }: { issue: IssueProps }) => {
 
-  const [data, setData] = useState<SelectProps['options']>([]);
+  const [assigneeSearch, setAssigneeSearch] = useState<string>();
+  const [reporterSearch, setReporterSearch] = useState<string>();
   const [assignee, setAssignee] = useState<string>();
   const [reporter, setReporter] = useState<string>();
   const [searchedEmail, setSearchedEmail] = useState<string>();
+
+  const user = useCurrentUser()
+
+  useEffect(() => {
+    setReporter('')
+    setAssignee('')
+    if (issue.reporter)
+      setReporter(issue.reporter.name)
+    if (issue.assignee)
+      setAssignee(issue.assignee.name)
+  }, [issue])
 
 
   const validateEmail = (email: string) => {
@@ -21,15 +32,10 @@ const IssueDetails = ({ issue }: { issue: IssueProps }) => {
   const handleAsigneeSearch = (newValue: string) => {
     setAssignee('')
     setSearchedEmail('')
+    setAssigneeSearch(newValue)
     if (validateEmail(newValue)) {
       setSearchedEmail(newValue)
     }
-    userListByEmail(newValue)
-      .then((data: any) => {
-        setData(data?.data)
-      }).catch(error => {
-        console.log(error, "sdadad")
-      })
   };
 
   const handleAssigneeChange = (newValue: string) => {
@@ -38,12 +44,10 @@ const IssueDetails = ({ issue }: { issue: IssueProps }) => {
       assignIssue(newValue, issue.id)
         .then((data: any) => {
           console.log(data, "assssss")
-          // setData(data?.data)
         }).catch(error => {
           console.log(error, "error in assignIssue")
         })
     }
-
   };
 
   const handleReporterSearch = (newValue: string) => {
@@ -52,52 +56,44 @@ const IssueDetails = ({ issue }: { issue: IssueProps }) => {
     if (validateEmail(newValue)) {
       setSearchedEmail(newValue)
     }
-    userListByEmail(newValue)
-      .then((data: any) => {
-        setData(data?.data)
-      })
+    setReporterSearch(newValue)
   };
 
   const handleReporterChange = (newValue: string) => {
     setReporter(newValue);
+    if (validateEmail(newValue)) {
+      ReporterIssue(newValue, issue.id)
+        .then((data: any) => {
+          console.log(data, "report issue")
+        }).catch(error => {
+          console.log(error, "error in report")
+        })
+    }
   };
 
   return (
     <Card title="Details">
-      <div className='grid grid-cols-2 my-4'>
-        <label>Assignee</label>
-        <Select
-          showSearch
+      <div className='flex my-4'>
+        <label className='flex-none w-32'>Assignee</label>
+        <CustomSelect
           value={assignee}
-          placeholder='search Assignee'
-          defaultActiveFirstOption={false}
-          suffixIcon={null}
-          filterOption={false}
+          search={assigneeSearch}
           onSearch={handleAsigneeSearch}
           onChange={handleAssigneeChange}
+          placeholder='search Assignee'
           notFoundContent={<p>{searchedEmail ? <span className='text-gray-600 cursor-pointer'>Invite {searchedEmail}</span> : 'Not Found'}</p>}
-          options={(data || []).map((d) => ({
-            value: d.email,
-            label: d.email,
-          }))}
         />
+
       </div>
-      <div className='grid grid-cols-2 my-4'>
-        <label>Reporter</label>
-        <Select
-          showSearch
+      <div className='flex my-4'>
+        <label className='flex-none w-32'>Reporter</label>
+        <CustomSelect
           value={reporter}
-          placeholder='search Reporter'
-          defaultActiveFirstOption={false}
-          suffixIcon={null}
-          filterOption={false}
+          search={reporterSearch}
           onSearch={handleReporterSearch}
           onChange={handleReporterChange}
+          placeholder='search Reporter'
           notFoundContent={<p>not found</p>}
-          options={(data || []).map((d) => ({
-            value: d.email,
-            label: d.email,
-          }))}
         />
       </div>
     </Card>
