@@ -4,8 +4,8 @@ import { error } from "console";
 import prisma from "../../prisma/client";
 
 import { getUserByEmail } from "@/data/user";
-
-export const assignIssue = async (email: string, issueId: number) => {
+import { addUserToProjects } from '@/actions/projects'
+export const assignIssue = async (email: string, issueId: number, projectId: number) => {
 
   const user = await getUserByEmail(email);
 
@@ -15,19 +15,31 @@ export const assignIssue = async (email: string, issueId: number) => {
   }
 
   try {
+    const projects = await prisma.project.findMany({
+      where: {
+        users: {
+          some: { email: email }
+        }
+      }
+    })
+
+    if (projects.length === 0) {
+      addUserToProjects([email], projectId)
+    }
     const updatedIssue = await prisma.issue.update({
       where: { id: Number(issueId) },
       data: { assigneeId: user.id }
     })
 
     return { data: updatedIssue, success: "Issue has been assigned!" }
+
   } catch (error) {
     return { error: error, message: "something went worng" }
-  }
 
+  }
 };
 
-export const ReporterIssue = async (email: string, issueId: number) => {
+export const ReporterIssue = async (email: string, issueId: number, projectId: number) => {
 
   const user = await getUserByEmail(email);
 
@@ -36,6 +48,18 @@ export const ReporterIssue = async (email: string, issueId: number) => {
   }
 
   try {
+    const projects = await prisma.project.findMany({
+      where: {
+        users: {
+          some: { email: email }
+        }
+      }
+    })
+
+    if (projects.length === 0) {
+      addUserToProjects([email], projectId)
+    }
+
     const updatedIssue = await prisma.issue.update({
       where: { id: Number(issueId) },
       data: { reporterId: user.id }

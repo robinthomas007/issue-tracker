@@ -2,7 +2,7 @@ import Image from "next/image";
 
 export default function Stats() {
   return (
-    <div className="col-span-5 grid grid-cols-5 justify-center mx-auto my-2 gap-2">
+    <div className="col-span-5 grid grid-cols-5 justify-center mx-auto my-2 gap-2 mr-4">
       <div className="shadow-2xl shadow-gray-50 dark:shadow-none border border-violet-50 dark:border-blue-850 bg-white dark:bg-blue-750 rounded-md relative">
         <div className="flex justify-center -translate-y-[1px]">
           <div className="w-3/4">

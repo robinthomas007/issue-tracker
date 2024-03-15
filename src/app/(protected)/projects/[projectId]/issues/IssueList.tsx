@@ -15,7 +15,10 @@ import { Space, Modal, Form, Input } from 'antd';
 import IssueDetails from '@/components/issues/issueDetails'
 import IssueActionForm from '@/components/issues/issueActionForm'
 import Image from 'next/image'
-import { CiUser } from "react-icons/ci";
+import AddUsersToProjectPopover from '@/components/projects/addUsersToProjectPopover'
+import { ProjectProps } from '../../page'
+import GetProjectUsers from '@/components/projects/getProjectUsers'
+import toast from 'react-hot-toast';
 
 const { TextArea } = Input;
 const { Text } = Typography;
@@ -41,14 +44,6 @@ export interface IssueProps {
   assigneeId: string
 }
 
-export interface ProjectProps {
-  id: number,
-  name: string,
-  description: string,
-  issues: Array<IssueProps>
-  users: any
-}
-
 const DraggableListItem = ({ item, type, editIssue, handleIssueView }: any) => {
 
   const [, drag] = useDrag({
@@ -62,8 +57,6 @@ const DraggableListItem = ({ item, type, editIssue, handleIssueView }: any) => {
       <MdOutlineEdit onClick={() => editIssue(item)} />
     </span>
   </div>
-
-  console.log(item, "itemitem")
 
   return (
     <Card size="small" ref={drag} key={item.id} title={cardHeader} bordered={false} className='min-h-60 my-2 max-h-60' style={{ marginTop: 5, padding: 0 }}>
@@ -127,7 +120,6 @@ function IssueList({ projectId }: { projectId: string }) {
   const handleIssueView = (issue: IssueProps) => {
     console.log("came")
     setEditIssues(issue)
-    // setIsViewModalOpen(true)
   }
 
   const renderIssueCard = (status: string) => {
@@ -152,6 +144,12 @@ function IssueList({ projectId }: { projectId: string }) {
   const updateStatus = async (status: string, item: IssueProps) => {
     try {
       await axios.patch(`/api/projects/${projectId}/issues/${item.id}/status`, { status: status })
+        .then((res) => {
+          if (res.data)
+            toast.success(`Issue status changed`)
+        }).catch((e) => {
+          toast.error('')
+        })
       fetchIssues()
     } catch (e) {
       console.log(e)
@@ -193,28 +191,15 @@ function IssueList({ projectId }: { projectId: string }) {
     }
   });
 
-  const getProjectUsers = () => {
+  const statuses = [
+    { refElm: selected, status: 'SELECTED', label: 'Analysis' },
+    { refElm: open, status: 'OPEN', label: 'To Do' },
+    { refElm: inprogress, status: 'IN_PROGRESS', label: 'In Progress' },
+    { refElm: test, status: 'TESTING', label: 'Testing' },
+    { refElm: close, status: 'CLOSED', label: 'Done' }
+  ];
 
-    const len = project?.users.length
-    const imgCount = 1
-
-    const items = project?.users.slice(imgCount).map((user: any) => ({
-      'key': user.id,
-      'label': <div className='flex items-center'>
-        <span><Image loader={() => user.image} width={40} height={10} className='rounded-full hover:border border-green-400' src={user.image} alt='user' /></span>
-        <span className='ml-2'>{user.name}</span>
-      </div>
-    }))
-
-    return project?.users.map((user: any, i: number) => <div key={user.id} className='w-20' style={{ width: 40 }}>
-      {i + 1 <= imgCount && <Image loader={() => user.image} width={100} height={10} className='rounded-full hover:border border-green-400' src={user.image} alt='user' />}
-      {i + 1 > imgCount && <div className=''>
-        <Dropdown menu={{ items }} placement="bottomLeft" arrow>
-          <Button type='link'>+ {len - 1} more</Button>
-        </Dropdown>
-      </div>}
-    </div>)
-  }
+  const updatingIssue = issues.find((issue) => issue.id === editIssues?.id)
 
   return (
     <>
@@ -230,55 +215,47 @@ function IssueList({ projectId }: { projectId: string }) {
       </Row>
 
       <Row justify={'start'} className='pb-2 items-center'>
-        <Col span={6}>
-          <Input placeholder='Search' />
-        </Col>
-        <Col span={11}>
-          <div className='flex justify-between'>
+        <Col span={16}>
+          <div className='flex justify-start'>
+            <Input className='max-w-80' placeholder='Search' />
             <div className='flex items-center ml-6'>
-              {getProjectUsers()}
+              <GetProjectUsers project={project!} />
             </div>
-            <div>
-              <Button icon={<CiUser />} > Add Users</Button>
+            <div className='ml-auto mr-4'>
+              <AddUsersToProjectPopover project={project!} afterSaveFn={fetchIssues} />
             </div>
           </div>
         </Col>
-      </Row>
+        <Col span={11}>
 
-      <div className="grid grid-cols-7 gap-2 mb-6 max-h-40">
-        <Stats />
-        <div className='col-span-2 border-l-2 px-4'>
-          <Card title={project?.name}>
-            <p className='overflow-scroll max-h-24'>{project?.description} The Sedin ecosystem is an integrated collaborative of highly specialised divisions. We’re consultants, technologists and entrepreneurs with skin in the game, and create out of the box strategies for your growth.</p>
-          </Card>
-        </div>
-      </div>
-      <div className="grid grid-cols-7 gap-2">
-        <div ref={selected} style={{ minHeight: '600px' }} className="w-full max-w bg-gray-100 border border-gray-200 rounded-lg shadow sm:p-2 min-h-30 h-30">
-          <p className='text-gray-600 font-semibold px-1 py-1 uppercase'>Analysis</p>
-          {renderIssueCard('SELECTED')}
-        </div>
-        <div ref={open} style={{ minHeight: '600px' }} className="w-full max-w bg-gray-100 border border-gray-200 rounded-lg shadow sm:p-2 min-h-30 h-30">
-          <p className='text-gray-600 font-semibold px-1 py-1 uppercase'>To do</p>
-          {renderIssueCard('OPEN')}
-        </div>
-        <div ref={inprogress} style={{ minHeight: '600px' }} className="w-full max-w bg-gray-100 border border-gray-200 rounded-lg shadow sm:p-2 min-h-30">
-          <p className='text-gray-600 font-semibold px-1 py-1 uppercase'>In Progress</p>
-          {renderIssueCard('IN_PROGRESS')}
-        </div>
-        <div ref={test} style={{ minHeight: '600px' }} className="w-full max-w bg-gray-100 border border-gray-200 rounded-lg shadow sm:p-2 min-h-30">
-          <p className='text-gray-600 font-semibold px-1 py-1 uppercase'>Testing</p>
-          {renderIssueCard('TESTING')}
-        </div>
-        <div ref={close} style={{ minHeight: '600px' }} className="w-full max-w bg-gray-100 border border-gray-200 rounded-lg shadow sm:p-2 min-h-30">
-          <p className='text-gray-600 font-semibold px-1 py-1 uppercase'>Done</p>
-          {renderIssueCard('CLOSED')}
-        </div>
-        {editIssues && <div className='col-span-2 border-l-2 p-4'>
-          <IssueActionForm editIssues={editIssues} />
-          <IssueDetails issue={editIssues} />
-        </div>}
-      </div >
+        </Col>
+      </Row>
+      <Row>
+        <Col span={16}>
+          <Stats />
+          <div className="grid grid-cols-5 gap-2 mr-4">
+            {statuses.map((s, i) => {
+              return <div key={s.status} ref={s.refElm} style={{ minHeight: '600px' }} className="w-full max-w bg-gray-100 border border-gray-200 rounded-lg shadow sm:p-2 min-h-30 h-30">
+                <p className='text-gray-600 font-semibold px-1 py-1 uppercase'>{s.label}</p>
+                {renderIssueCard(s.status)}
+              </div>
+            })}
+          </div>
+        </Col>
+        <Col span={8}>
+          <div className="grid grid-cols-1 gap-2 mb-6">
+            <div className='col-span-2 border-l-2 px-4'>
+              <Card title={project?.name}>
+                <p className='overflow-scroll'>{project?.description}</p>
+              </Card>
+            </div>
+          </div>
+          {editIssues && <div className='col-span-2 border-l-2 p-4'>
+            <IssueActionForm editIssues={editIssues} />
+            <IssueDetails issue={updatingIssue!} projectId={project?.id!} setEditIssues={setEditIssues} fetchIssues={fetchIssues} />
+          </div>}
+        </Col>
+      </Row>
     </>
   )
 }

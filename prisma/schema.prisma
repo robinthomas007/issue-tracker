@@ -18,7 +18,7 @@ model Issue {
   id          Int      @id @default(autoincrement())
   title       String   @db.VarChar(255)
   description String   @db.Text
-  status      Status   @default(OPEN)
+  status      Status   @default(SELECTED)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   Project     Project? @relation(fields: [projectId], references: [id])
@@ -48,7 +48,11 @@ model Project {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   issues      Issue[]
-  users       User[]
+  users       User[]   @relation("ProjectUsers")
+  User        User?    @relation("CreatedBy", fields: [createdById], references: [id])
+  createdById String?
+
+  @@index([createdById])
 }
 
 model Account {
@@ -85,10 +89,12 @@ model User {
   password              String?
   role                  UserRole               @default(USER)
   accounts              Account[]
-  projects              Project[]
+  projects              Project[]              @relation("ProjectUsers")
   TwoFactorConfirmation TwoFactorConfirmation?
   assignedIssues        Issue[]                @relation("Assignee")
   reportedIssues        Issue[]                @relation("Reporter")
+  Project               Project[]              @relation("CreatedBy")
+  projectId             Int?
 }
 
 model VerificationToken {

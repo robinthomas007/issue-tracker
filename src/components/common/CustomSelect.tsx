@@ -4,7 +4,7 @@ import Image from 'next/image'
 import { userListByEmail } from '@/actions/users'
 import type { SelectProps } from 'antd';
 
-const CustomSelect = ({ value, mode, search, onSearch, onChange, placeholder, notFoundContent }: { value: any, mode?: string, search: any, onSearch: any, onChange?: any, placeholder: string, notFoundContent: React.ReactElement }) => {
+const CustomSelect = ({ value, mode, search, onSearch, onChange, placeholder, notFoundContent, handleDeselect }: { value: any, mode?: string, search: any, onSearch: any, onChange?: any, placeholder: string, notFoundContent: React.ReactElement, handleDeselect?: any }) => {
 
   const [data, setData] = useState<SelectProps['options']>([]);
 
@@ -20,7 +20,7 @@ const CustomSelect = ({ value, mode, search, onSearch, onChange, placeholder, no
 
   const optionRender = (option: any) => {
     return (
-      <div className='text-green-700 flex items-center'>
+      <div className='text-green-700 flex items-center text-left'>
         <div className='mr-4'>
           <Image style={{ border: 1, borderRadius: 100 }} className='border-r-8' alt="user" loader={() => option.data.image} src={option.data.image} width={45} height={45} />
         </div>
@@ -41,6 +41,7 @@ const CustomSelect = ({ value, mode, search, onSearch, onChange, placeholder, no
       placeholder={placeholder}
       defaultActiveFirstOption={false}
       optionRender={optionRender}
+      onDeselect={handleDeselect}
       suffixIcon={null}
       filterOption={false}
       onSearch={onSearch}

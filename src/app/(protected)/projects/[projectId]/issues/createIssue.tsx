@@ -5,6 +5,7 @@ import axios from 'axios';
 import { IssueProps } from './IssueList'
 import { useParams } from 'next/navigation'
 import { useCurrentUser } from '@/hooks/use-current-user';
+import toast from 'react-hot-toast';
 
 const { TextArea } = Input;
 const { Text } = Typography;
@@ -34,12 +35,24 @@ const CreateIssueModal: React.FC<IssueModalProps> = ({ isModalOpen, handleOk, ha
     if (issue?.id) {
       try {
         await axios.patch(`/api/projects/${params.projectId}/issues/${issue.id}`, data)
+          .then((res) => {
+            if (res.data)
+              toast.success('Issue Updated Successfully!')
+          }).catch((e) => {
+            toast.error('')
+          })
       } catch (e) {
         console.log(e)
       }
     } else {
       try {
         await axios.post(`/api/projects/${params.projectId}/issues`, data)
+          .then((res) => {
+            if (res.data)
+              toast.success('Issue Created Successfully!')
+          }).catch((e) => {
+            toast.error('')
+          })
       } catch (e) {
         console.log(e)
       }

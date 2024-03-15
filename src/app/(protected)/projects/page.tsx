@@ -1,6 +1,6 @@
 'use client'
 import React, { useEffect, useState } from 'react'
-import { Row, Layout, Col, Button, Typography, Table, Dropdown, Space } from 'antd';
+import { Row, Layout, Col, Button, Typography, Table, Dropdown, Space, Tooltip } from 'antd';
 import CreateProjectModal from './createProject'
 import axios from 'axios';
 import type { TableProps } from 'antd';
@@ -8,90 +8,106 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { MdOutlineEdit } from "react-icons/md";
 import { MdDeleteOutline } from "react-icons/md";
-import { CiUser } from "react-icons/ci";
-
+import AddUsersToProjectPopover from '@/components/projects/addUsersToProjectPopover'
+import { format } from 'date-fns';
+import GetProjectUsers from '@/components/projects/getProjectUsers'
 const { Title } = Typography
 const { Content } = Layout
 
 export interface ProjectProps {
+  createdById: any;
   id: number,
   name: string,
   description: string,
-  users: any
+  users: any,
+  createdAt: string,
+  updatedAt: string
 }
-
-
-const columns: TableProps<ProjectProps>['columns'] = [
-  {
-    title: 'Id',
-    dataIndex: 'id',
-    key: 'id',
-  },
-  {
-    title: 'Name',
-    dataIndex: 'name',
-    key: 'name',
-    render: (_, project) => {
-      return <Link href={`/projects/${project.id}/issues`}>{project.name}</Link>
-    }
-  },
-  {
-    title: 'Description',
-    dataIndex: 'description',
-    key: 'description',
-  },
-
-  {
-    title: 'Users',
-    dataIndex: 'users',
-    key: 'users',
-    className: "flex min-h-18",
-    width: 300,
-    render: (_, project) => {
-      const len = project.users.length
-      if (len === 0) {
-        return <div className='min-h-11'>
-          <Button icon={<CiUser />} > Add Users</Button>
-        </div>
-      }
-      const imgCount = 1
-      const items = project.users.slice(imgCount).map((user: any) => ({
-        'key': user.id,
-        'label': <div className='flex items-center'>
-          <span><Image loader={() => user.image} width={40} height={10} className='rounded-full hover:border border-green-400' src={user.image} alt='user' /></span>
-          <span className='ml-2'>{user.name}</span>
-        </div>
-      }))
-
-      return project.users.map((user: any, i: number) => <div key={user.id} className='w-20' style={{ width: 40 }}>
-        {i + 1 <= imgCount && <Image loader={() => user.image} width={100} height={10} className='rounded-full hover:border border-green-400' src={user.image} alt='user' />}
-        {i + 1 > imgCount && <div className=''>
-          <Dropdown menu={{ items }} placement="bottomLeft" arrow>
-            <Button type='link'>+ {len - 1} more</Button>
-          </Dropdown>
-        </div>}
-      </div>)
-    }
-  },
-  {
-    title: "Action",
-    key: "action",
-    render: (_: any, project) => (
-      <Space size="middle">
-        <MdOutlineEdit />
-        <MdDeleteOutline />
-      </Space>
-    )
-  }
-
-
-];
-
 
 export default function Home() {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
   const [editProject, setEditProject] = useState<ProjectProps | null>(null)
   const [projects, setProjects] = useState<Array<ProjectProps>>([])
+
+  const columns: TableProps<ProjectProps>['columns'] = [
+    {
+      title: 'Id',
+      dataIndex: 'id',
+      key: 'id',
+    },
+    {
+      title: 'Name',
+      dataIndex: 'name',
+      key: 'name',
+      width: 200,
+      render: (_, project) => {
+        return <Link href={`/projects/${project.id}/issues`}>{project.name}</Link>
+      }
+    },
+    {
+      title: 'Description',
+      dataIndex: 'description',
+      key: 'description',
+    },
+    {
+      title: 'Users',
+      dataIndex: 'users',
+      key: 'users',
+      className: "flex min-h-18",
+      width: 300,
+      render: (_, project) => {
+        const len = project.users.length
+        const imgCount = 1
+        const items = project.users.slice(imgCount).map((user: any) => ({
+          'key': user.id,
+          'label': <div className='flex items-center'>
+            <span><Image loader={() => user.image} width={40} height={10} className='rounded-full hover:border border-green-400' src={user.image} alt='user' /></span>
+            <span className='ml-2'>{user.name}</span>
+          </div>
+        }))
+
+        return <div className='flex items-center w-full'>
+          <GetProjectUsers project={project} />
+          <div className='ml-auto'>
+            <AddUsersToProjectPopover project={project} afterSaveFn={fetchProjects} />
+          </div>
+        </div>
+      }
+    },
+    {
+      title: 'Created Date',
+      dataIndex: 'createdAt',
+      key: 'createdAt',
+      width: 150,
+      render: (_, project) => {
+        return <span>{format(project.createdAt, 'dd/MM/yyyy')}</span>
+      }
+    },
+    {
+      title: 'Updated Date',
+      dataIndex: 'updatedAt',
+      key: 'updatedAt',
+      width: 150,
+      render: (_, project) => {
+        return <span>{format(project.updatedAt, 'dd/MM/yyyy')}</span>
+      }
+    },
+    {
+      title: "Action",
+      key: "action",
+      render: (_: any, project) => (
+        <Space size="middle">
+          <MdOutlineEdit onClick={() => handleEdit(project)} />
+          <MdDeleteOutline />
+        </Space>
+      )
+    }
+  ];
+
+  const handleEdit = (project: ProjectProps) => {
+    setEditProject(project)
+    setIsModalOpen(true)
+  }
 
   useEffect(() => {
     fetchProjects();
@@ -124,8 +140,6 @@ export default function Home() {
     setIsModalOpen(false)
     setEditProject(null)
   }
-
-
 
   return (
     <Layout>
