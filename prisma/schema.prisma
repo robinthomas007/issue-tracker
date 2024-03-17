@@ -15,18 +15,20 @@ datasource db {
 }
 
 model Issue {
-  id          Int      @id @default(autoincrement())
-  title       String   @db.VarChar(255)
-  description String   @db.Text
-  status      Status   @default(SELECTED)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  Project     Project? @relation(fields: [projectId], references: [id])
+  id          Int          @id @default(autoincrement())
+  title       String       @db.VarChar(255)
+  description String       @db.Text
+  status      Status       @default(SELECTED)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  Project     Project?     @relation(fields: [projectId], references: [id])
   projectId   Int?
-  assignee    User?    @relation("Assignee", fields: [assigneeId], references: [id])
+  assignee    User?        @relation("Assignee", fields: [assigneeId], references: [id])
   assigneeId  String?
-  reporter    User?    @relation("Reporter", fields: [reporterId], references: [id])
+  reporter    User?        @relation("Reporter", fields: [reporterId], references: [id])
   reporterId  String?
+  Comment     Comment[]
+  Attachment  Attachment[]
 
   @@index([projectId])
   @@index([assigneeId])
@@ -95,6 +97,7 @@ model User {
   reportedIssues        Issue[]                @relation("Reporter")
   Project               Project[]              @relation("CreatedBy")
   projectId             Int?
+  Comment               Comment[]              @relation("CommentedBy")
 }
 
 model VerificationToken {
@@ -131,4 +134,31 @@ model TwoFactorConfirmation {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId])
+}
+
+model Comment {
+  id            Int          @id @default(autoincrement())
+  comments      String       @db.Text
+  Issue         Issue?       @relation(fields: [issueId], references: [id])
+  issueId       Int?
+  User          User?        @relation("CommentedBy", fields: [commentedById], references: [id])
+  commentedById String?
+  Attachment    Attachment[]
+
+  @@index([issueId])
+  @@index([commentedById])
+}
+
+model Attachment {
+  id          Int      @id @default(autoincrement())
+  filename    String
+  contentType String
+  url         String   @unique
+  issue       Issue?   @relation(fields: [issueId], references: [id])
+  issueId     Int?
+  comment     Comment? @relation(fields: [commentId], references: [id])
+  commentId   Int?
+
+  @@index([issueId])
+  @@index([commentId])
 }

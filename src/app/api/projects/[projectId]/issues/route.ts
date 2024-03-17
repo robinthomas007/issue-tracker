@@ -31,6 +31,21 @@ export async function GET(request: NextRequest, params: { params: { projectId: s
       users: true,
       issues: {
         include: {
+          Comment: {
+            include: {
+              Attachment: true,
+              User: {
+                select: {
+                  email: true,
+                  name: true,
+                  image: true,
+                }
+              }
+            }
+          },
+          Attachment: {
+            where: { commentId: null }
+          },
           assignee: {
             select: {
               email: true,
@@ -45,6 +60,7 @@ export async function GET(request: NextRequest, params: { params: { projectId: s
               image: true,
             }
           },
+
         }
       },
     }

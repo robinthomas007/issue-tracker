@@ -27,3 +27,20 @@ body {
 .ant-card-body, .ant-card-head{
   padding: 10px 20px !important;
 }
+.comment-mention-users textarea {
+  outline: none;
+  z-index: 0;
+}
+
+.comment-mention-users__suggestions {
+  border: 1px solid #ccc;
+}
+
+.comment-mention-users__highlighter strong{
+  z-index: 999;
+  position: relative;
+}
+
+.comment-mention-users__highlighter strong::before {
+  /* content: '@'; Add the prefix '@' */
+}

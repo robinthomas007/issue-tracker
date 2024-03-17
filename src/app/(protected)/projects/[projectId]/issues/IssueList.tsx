@@ -210,7 +210,7 @@ function IssueList({ projectId }: { projectId: string }) {
           <Title level={2}>{project?.name}</Title>
         </Col>
         <Col>
-          <Button type='primary' onClick={() => setIsModalOpen(true)}>Create Issue</Button>
+          <Button type='primary' onClick={() => { setEditIssues(null); setIsModalOpen(true) }}>Create Issue</Button>
         </Col>
       </Row>
 
@@ -245,14 +245,16 @@ function IssueList({ projectId }: { projectId: string }) {
         <Col span={8}>
           <div className="grid grid-cols-1 gap-2 mb-6">
             <div className='col-span-2 border-l-2 px-4'>
-              <Card title={project?.name}>
-                <p className='overflow-scroll'>{project?.description}</p>
+              <Card title={editIssues?.title}>
+                <p>{editIssues?.description}</p>
               </Card>
+            </div>
+            <div className='col-span-2 border-l-2 px-4'>
+              {editIssues && <IssueDetails issue={updatingIssue!} projectId={project?.id!} setEditIssues={setEditIssues} fetchIssues={fetchIssues} />}
             </div>
           </div>
           {editIssues && <div className='col-span-2 border-l-2 p-4'>
-            <IssueActionForm editIssues={editIssues} />
-            <IssueDetails issue={updatingIssue!} projectId={project?.id!} setEditIssues={setEditIssues} fetchIssues={fetchIssues} />
+            <IssueActionForm editIssues={editIssues} users={project?.users} />
           </div>}
         </Col>
       </Row>
