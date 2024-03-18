@@ -4,9 +4,14 @@ import { useCurrentUser } from '@/hooks/use-current-user';
 import Image from 'next/image'
 import { MentionsInput, Mention } from 'react-mentions';
 import FileUpload from '@/components/common/fileUpload'
-import { createComment } from '@/actions/comments'
+import { createComment, updateComment, deleteComment } from '@/actions/comments'
 import toast from 'react-hot-toast';
 import axios from 'axios';
+import { handleFileSubmit } from '@/components/common/handleFileupload'
+import { MdOutlineEdit } from "react-icons/md";
+import { MdDeleteForever } from "react-icons/md";
+import { IoMdCloseCircle } from "react-icons/io";
+import { deletAttachment } from '@/actions/upload'
 
 const IssueActionForm = ({ editIssues, users }: { editIssues: any, users: any }) => {
   const user = useCurrentUser()
@@ -15,8 +20,8 @@ const IssueActionForm = ({ editIssues, users }: { editIssues: any, users: any })
   const [files, setFiles] = useState([]);
   const [imageUrls, setimageUrls] = useState<Array<string>>([])
   const [signedUrls, setSignedUrls] = useState<Array<any>>([])
-
   const [uploading, setUploading] = useState(false)
+  const [editComment, setEditComment] = useState<any>(null)
 
   useEffect(() => {
     fetchComments(editIssues.id)
@@ -45,7 +50,81 @@ const IssueActionForm = ({ editIssues, users }: { editIssues: any, users: any })
   };
 
   const addComment = () => {
-    createComment(value, user?.id, editIssues.id, signedUrls)
+    if (editComment?.id) {
+      updateComment(editComment.id, value, user?.id, editIssues.id, signedUrls)
+        .then((data: any) => {
+          toast.success(data.success)
+          setimageUrls([])
+          setSignedUrls([])
+          setFiles([])
+          fetchComments(editIssues.id)
+        }).catch(error => {
+          toast.success(error.message)
+        })
+    } else {
+      createComment(value, user?.id, editIssues.id, signedUrls)
+        .then((data: any) => {
+          toast.success(data.success)
+          setimageUrls([])
+          setSignedUrls([])
+          setFiles([])
+          fetchComments(editIssues.id)
+        }).catch(error => {
+          toast.success(error.message)
+        })
+    }
+  }
+
+  const deleteImage = async (url: string) => {
+    const attachment = editComment?.Attachment.find((att: any) => att.url === url)
+    if (attachment) {
+      const response = await deletAttachment(attachment.id, 'comment')
+      if (response.data) {
+        setimageUrls(imageUrls.filter((imageUrl) => imageUrl !== url));
+        setSignedUrls(signedUrls.filter((file) => file.url !== url))
+      }
+    } else {
+      setimageUrls(imageUrls.filter((imageUrl) => imageUrl !== url));
+    }
+  }
+
+  useEffect(() => {
+    const fileLength = files.length
+    let signedUrlsLength = signedUrls.length
+    if (editComment?.Attachment && editComment.Attachment.length > 0) {
+      signedUrlsLength = signedUrlsLength - editComment.Attachment.length
+    }
+
+    if (fileLength > 0 && signedUrlsLength > 0) {
+      if (fileLength === signedUrlsLength) {
+        addComment()
+      }
+    }
+  }, [signedUrls])
+
+  const handleSubmit = async () => {
+    if (files.length > 0) {
+      handleFileSubmit(files, setSignedUrls, setUploading)
+    } else {
+      addComment();
+    }
+  };
+
+  const handleEditComment = (comment: any) => {
+    setEditComment(comment)
+    setValue(comment.comments)
+    if (comment.Attachment.length > 0) {
+      const urls = comment.Attachment.map((at: any) => at.url)
+      setimageUrls(urls)
+      const attachments = comment.Attachment.map((attach: any) => {
+        return { contentType: attach.contentType, filename: attach.filename, attachmentId: attach.id, url: attach.url }
+      })
+      setSignedUrls(attachments)
+    }
+  }
+
+  const handleDeleteComment = (comment: any) => {
+    deleteComment(comment.id)
       .then((data: any) => {
         toast.success(data.success)
         setimageUrls([])
@@ -56,65 +135,6 @@ const IssueActionForm = ({ editIssues, users }: { editIssues: any, users: any })
         toast.success(error.message)
       })
   }
-
-  useEffect(() => {
-    if (files.length > 0 && signedUrls.length > 0) {
-      if (files.length === signedUrls.length) {
-        addComment()
-      }
-    }
-  }, [signedUrls])
-
-  const uploadTos3AndSaveComment = async (file: any, url: string, formData: any, fields: any) => {
-    try {
-      const uploadResponse = await fetch(url, {
-        method: 'POST',
-        body: formData,
-      })
-      if (uploadResponse.ok) {
-        setSignedUrls((prevImageUrls: string[]) => [...prevImageUrls, { filename: file.name, contentType: file.type, url: `${uploadResponse.url}${fields.key}` }])
-      } else {
-        console.error('S3 Upload Error:', uploadResponse)
-      }
-    } catch (error) {
-
-    }
-  }
-
-  const handleSubmit = async () => {
-    if (files.length > 0) {
-      setUploading(true);
-      const toastId = toast.loading('Uploading...');
-      try {
-        const uploadPromises = files.map(async (file: any) => {
-          if (!file) {
-            alert('Please select a file to upload.')
-            return;
-          }
-          const res = await axios.post('/api/upload', { filename: file.name, contentType: file.type });
-          if (res.data && res.data.url) {
-            const { url, fields } = res.data;
-            const formData = new FormData();
-            Object.entries(fields).forEach(([key, value]) => {
-              formData.append(key, value as string);
-            });
-            formData.append('file', file);
-            await uploadTos3AndSaveComment(file, url, formData, fields);
-          }
-        });
-
-        await Promise.all(uploadPromises);
-        toast.dismiss(toastId)
-      } catch (error) {
-        toast.error('Failed to upload file.');
-      } finally {
-        setUploading(false);
-      }
-    } else {
-      addComment();
-    }
-  };
-
 
   const renderComment = () => {
     return comments.map((comment: any) => {
@@ -130,8 +150,12 @@ const IssueActionForm = ({ editIssues, users }: { editIssues: any, users: any })
             </div>
             <div className='font-semibold'>{comment.User.name}</div>
             <div className='ml-5 text-gray-500'>12 Hours ago</div>
+            <div className='ml-2 flex text-lg'>
+              <MdOutlineEdit className='text-lg mr-2' onClick={() => handleEditComment(comment)} />
+              <MdDeleteForever className='text-lg' onClick={() => handleDeleteComment(comment)} />
+            </div>
           </div>
-          <p className='ml-10'>{jsx}</p>
+          <div className='ml-10'>{jsx}</div>
           <div className='grid grid-cols-3'>
             {comment.Attachment.map((attachment: any) => {
               return (
@@ -184,11 +208,16 @@ const IssueActionForm = ({ editIssues, users }: { editIssues: any, users: any })
           </div>
         </div>
         <div>
-          <FileUpload setimageUrls={setimageUrls} setFiles={setFiles} />
+          <FileUpload setimageUrls={setimageUrls} setFiles={setFiles} uploading={uploading} />
         </div>
-        <div className='grid grid-cols-3 gap-1'>
+        <div className='grid grid-cols-3 gap-1 ml-10'>
           {imageUrls.map((img: string, i: number) => (
-            <Image key={i} alt="user" loader={() => img} src={img} width={200} height={200} />
+            <div key={i} className='relative group'>
+              <span className='absolute top-1 cursor-pointer left-44 bg-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300'>
+                <IoMdCloseCircle className='text-lg' onClick={() => deleteImage(img)} />
+              </span>
+              <Image alt="user" loader={() => img} src={img} width={200} height={200} className='h-full' />
+            </div>
           ))}
         </div>
         <div className='flex items-center justify-end'>

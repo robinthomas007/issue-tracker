@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from 'zod'
 import prisma from "../../../../../../../prisma/client";
+import { upsertAttachment } from '@/actions/upload'
 
 const createIssueSchema = z.object({
   title: z.string().min(1).max(255),
@@ -17,5 +18,10 @@ export async function PATCH(request: NextRequest, { params }: { params: { issueI
     where: { id: Number(params.issueId) },
     data: { title: body.title, description: body.description }
   })
+
+  if (updatedIssue && body.imageUrls.length > 0) {
+    const newAttachment = await upsertAttachment(body.imageUrls, updatedIssue.id)
+  }
+
   return NextResponse.json(updatedIssue, { status: 200 })
 }

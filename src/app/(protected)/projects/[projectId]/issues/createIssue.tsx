@@ -8,6 +8,9 @@ import { useCurrentUser } from '@/hooks/use-current-user';
 import toast from 'react-hot-toast';
 import FileUpload from '@/components/common/fileUpload'
 import Image from 'next/image'
+import { handleFileSubmit } from '@/components/common/handleFileupload'
+import { IoMdCloseCircle } from "react-icons/io";
+import { deletAttachment } from '@/actions/upload'
 
 const { TextArea } = Input;
 const { Text } = Typography;
@@ -23,18 +26,28 @@ const CreateIssueModal: React.FC<IssueModalProps> = ({ isModalOpen, handleOk, ha
 
   const [form] = Form.useForm()
   const params = useParams<{ projectId: string }>()
+  const [files, setFiles] = useState([]);
   const [imageUrls, setimageUrls] = useState<Array<string>>([])
+  const [signedUrls, setSignedUrls] = useState<Array<any>>([])
+  const [uploading, setUploading] = useState(false)
 
   const user = useCurrentUser()
 
   useEffect(() => {
     if (issue && Object.keys(issue).length !== 0) {
       form.setFieldsValue({ id: issue.id, title: issue.title, description: issue.description })
+      if (issue.Attachment.length > 0) {
+        const attachments = issue.Attachment.map((attach: any) => {
+          return { contentType: attach.contentType, filename: attach.filename, attachmentId: attach.id, url: attach.url }
+        })
+        setSignedUrls(attachments)
+        setimageUrls(attachments.map((at: any) => at.url))
+      }
     }
   }, [issue]);
 
-  const onFinish = async (values: any) => {
-    const data = { ...values, reporterId: user?.id, imageUrls: imageUrls }
+  const addIssue = async (values: any) => {
+    const data = { ...values, reporterId: user?.id, imageUrls: signedUrls }
     if (issue?.id) {
       try {
         await axios.patch(`/api/projects/${params.projectId}/issues/${issue.id}`, data)
@@ -61,6 +74,44 @@ const CreateIssueModal: React.FC<IssueModalProps> = ({ isModalOpen, handleOk, ha
       }
     }
     handleOk()
+  }
+
+  const deleteImage = async (url: string) => {
+    const attachment = issue?.Attachment.find((att: any) => att.url === url)
+    if (attachment) {
+      const response = await deletAttachment(attachment.id, 'issue')
+      if (response.data) {
+        setimageUrls(imageUrls.filter((imageUrl) => imageUrl !== url));
+        setSignedUrls(signedUrls.filter((file) => file.url !== url))
+      }
+    } else {
+      setimageUrls(imageUrls.filter((imageUrl) => imageUrl !== url));
+    }
+  }
+
+  useEffect(() => {
+    const fileLength = files.length
+    let signedUrlsLength = signedUrls.length
+
+    if (issue?.Attachment && issue.Attachment.length > 0) {
+      signedUrlsLength = signedUrlsLength - issue.Attachment.length
+    }
+
+    if (fileLength > 0 && signedUrlsLength > 0) {
+      if (fileLength === signedUrlsLength) {
+        const allValues = form.getFieldsValue();
+        addIssue(allValues)
+      }
+    }
+  }, [signedUrls])
+
+  const onFinish = async (values: any) => {
+
+    if (files.length > 0) {
+      handleFileSubmit(files, setSignedUrls, setUploading)
+    } else {
+      addIssue(values);
+    }
   };
 
   const onFinishFailed = (errorInfo: any) => {
@@ -113,12 +164,17 @@ const CreateIssueModal: React.FC<IssueModalProps> = ({ isModalOpen, handleOk, ha
       <div className='flex items-center ml-20'>
         <label>Attachments</label>
         <div>
-          <FileUpload setimageUrls={setimageUrls} setFiles={() => { }} />
+          <FileUpload setimageUrls={setimageUrls} setFiles={setFiles} uploading={uploading} />
         </div>
       </div>
       <div className='grid grid-cols-3 gap-1 ml-44'>
         {imageUrls.map((img: string, i: number) => (
-          <Image key={i} alt="user" loader={() => img} src={img} width={200} height={200} />
+          <div key={i} className='relative group'>
+            <span className='absolute top-1 cursor-pointer left-44 bg-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300'>
+              <IoMdCloseCircle className='text-lg' onClick={() => deleteImage(img)} />
+            </span>
+            <Image alt="user" loader={() => img} src={img} width={200} height={200} className='h-full' />
+          </div>
         ))}
       </div>
     </Modal>

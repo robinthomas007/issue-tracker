@@ -60,11 +60,11 @@ const DraggableListItem = ({ item, type, editIssue, handleIssueView }: any) => {
   </div>
 
   return (
-    <Card size="small" ref={drag} key={item.id} title={cardHeader} bordered={false} className='min-h-60 my-2 max-h-60' style={{ marginTop: 5, padding: 0 }}>
+    <Card size="small" ref={drag} key={item.id} title={cardHeader} bordered={false} className='min-h-40 my-2 max-h-40' style={{ marginTop: 5, padding: 0 }}>
       <p className='overflow-auto max-h-28 cursor-pointer' onClick={() => handleIssueView(item)}>
         {item.description}
       </p>
-      {item.assignee && <div className='flex items-center mt-3rounded absolute bottom-2 w-48'>
+      {item.assignee && <div className='flex items-center mt-3rounded absolute bottom-2 w-32'>
         <span><Image loader={() => item.assignee.image} width={30} height={10} className='rounded-full hover:border border-green-400' src={item.assignee.image} alt='user' /></span>
       </div>}
     </Card>

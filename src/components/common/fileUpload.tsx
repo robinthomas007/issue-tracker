@@ -10,8 +10,7 @@ import toast from 'react-hot-toast';
 import { createAttachment } from '@/actions/upload'
 import { BeatLoader } from "react-spinners";
 
-export default function FileUpload({ setimageUrls, setFiles }: { setimageUrls: any, setFiles: any }) {
-  const [uploading, setUploading] = useState(false)
+export default function FileUpload({ setimageUrls, setFiles, uploading }: { setimageUrls: any, setFiles: any, uploading: boolean }) {
   const [form] = Form.useForm();
 
   // const handleSubmit = async (info: any) => {
