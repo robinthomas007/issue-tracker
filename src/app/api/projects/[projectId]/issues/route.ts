@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from 'zod'
 import prisma from "../../../../../../prisma/client";
 import IssueSchemaData from '@prisma/client'
+import { updateAttachmentMultiple } from '@/actions/upload'
 
 const createIssueSchema = z.object({
   title: z.string().min(1).max(255),
@@ -15,9 +16,15 @@ export async function POST(request: NextRequest, params: { params: { projectId: 
   const validation = createIssueSchema.safeParse(body)
   if (!validation.success)
     return NextResponse.json(validation.error.format(), { status: 400 })
+
   const newIssue = await prisma.issue.create({
     data: { title: body.title, description: body.description, projectId: projectId, reporterId: body.reporterId }
   })
+
+  if (newIssue && body.imageUrls.length > 0) {
+    const updatedAttachment = await updateAttachmentMultiple(body.imageUrls, newIssue.id)
+  }
+
   return NextResponse.json(newIssue, { status: 201 })
 }
 

@@ -1,17 +1,19 @@
 "use server";
 
 import prisma from "../../prisma/client";
-import { updateAttachmentMultiple } from '@/actions/upload'
+import { createAttachment } from '@/actions/upload'
 
 export const createComment = async (value: string, commentedById: string, issueId: number, imageUrls: Array<string>) => {
   try {
     const newComment = await prisma.comment.create({
       data: { comments: value, commentedById: commentedById, issueId: issueId }
     })
-    console.log(newComment, "newCommentnewCommentnewCommentnewComment")
+
+    console.log(newComment, imageUrls)
+
     if (newComment && imageUrls.length > 0) {
-      const updatedAttachment = await updateAttachmentMultiple(imageUrls, newComment.issueId, newComment.id)
-      console.log(updatedAttachment, "updatedAttachmentupdatedAttachmentupdatedAttachment")
+      const newAttachment = await createAttachment(imageUrls, newComment.issueId, newComment.id)
+      console.log(newAttachment)
     }
 
     return { data: newComment, success: "Comment added successful" }

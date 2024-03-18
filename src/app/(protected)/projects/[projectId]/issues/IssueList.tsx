@@ -41,7 +41,8 @@ export interface IssueProps {
   reporter: AssigneeReporterProps,
   assignee: AssigneeReporterProps
   reporterId: string,
-  assigneeId: string
+  assigneeId: string,
+  Attachment: any,
 }
 
 const DraggableListItem = ({ item, type, editIssue, handleIssueView }: any) => {
@@ -232,7 +233,7 @@ function IssueList({ projectId }: { projectId: string }) {
       </Row>
       <Row>
         <Col span={16}>
-          <Stats />
+          <Stats issues={issues} />
           <div className="grid grid-cols-5 gap-2 mr-4">
             {statuses.map((s, i) => {
               return <div key={s.status} ref={s.refElm} style={{ minHeight: '600px' }} className="w-full max-w bg-gray-100 border border-gray-200 rounded-lg shadow sm:p-2 min-h-30 h-30">
@@ -242,21 +243,30 @@ function IssueList({ projectId }: { projectId: string }) {
             })}
           </div>
         </Col>
-        <Col span={8}>
+        {editIssues && <Col span={8}>
           <div className="grid grid-cols-1 gap-2 mb-6">
             <div className='col-span-2 border-l-2 px-4'>
               <Card title={editIssues?.title}>
                 <p>{editIssues?.description}</p>
+                <div className='grid grid-cols-2 gap-4'>
+                  {updatingIssue?.Attachment.map((attachment: any) => {
+                    return (
+                      <div key={attachment.id} className=' my-5'>
+                        <Image style={{ border: 1 }} className='' alt="user" loader={() => attachment.url} src={attachment.url} width={400} height={200} />
+                      </div>
+                    )
+                  })}
+                </div>
               </Card>
             </div>
             <div className='col-span-2 border-l-2 px-4'>
-              {editIssues && <IssueDetails issue={updatingIssue!} projectId={project?.id!} setEditIssues={setEditIssues} fetchIssues={fetchIssues} />}
+              <IssueDetails issue={updatingIssue!} projectId={project?.id!} setEditIssues={setEditIssues} fetchIssues={fetchIssues} />
             </div>
           </div>
-          {editIssues && <div className='col-span-2 border-l-2 p-4'>
+          <div className='col-span-2 border-l-2 p-4'>
             <IssueActionForm editIssues={editIssues} users={project?.users} />
-          </div>}
-        </Col>
+          </div>
+        </Col>}
       </Row>
     </>
   )

@@ -6,6 +6,8 @@ import { IssueProps } from './IssueList'
 import { useParams } from 'next/navigation'
 import { useCurrentUser } from '@/hooks/use-current-user';
 import toast from 'react-hot-toast';
+import FileUpload from '@/components/common/fileUpload'
+import Image from 'next/image'
 
 const { TextArea } = Input;
 const { Text } = Typography;
@@ -21,6 +23,7 @@ const CreateIssueModal: React.FC<IssueModalProps> = ({ isModalOpen, handleOk, ha
 
   const [form] = Form.useForm()
   const params = useParams<{ projectId: string }>()
+  const [imageUrls, setimageUrls] = useState<Array<string>>([])
 
   const user = useCurrentUser()
 
@@ -31,7 +34,7 @@ const CreateIssueModal: React.FC<IssueModalProps> = ({ isModalOpen, handleOk, ha
   }, [issue]);
 
   const onFinish = async (values: any) => {
-    const data = { ...values, reporterId: user?.id }
+    const data = { ...values, reporterId: user?.id, imageUrls: imageUrls }
     if (issue?.id) {
       try {
         await axios.patch(`/api/projects/${params.projectId}/issues/${issue.id}`, data)
@@ -69,6 +72,7 @@ const CreateIssueModal: React.FC<IssueModalProps> = ({ isModalOpen, handleOk, ha
       open={isModalOpen}
       onCancel={handleCancel}
       className='text-center'
+      width={900}
       footer={[
         <Button form="createIssueForm" key="submit" htmlType="submit" type="primary">
           Save
@@ -106,6 +110,17 @@ const CreateIssueModal: React.FC<IssueModalProps> = ({ isModalOpen, handleOk, ha
           <TextArea rows={6} />
         </Form.Item>
       </Form>
+      <div className='flex items-center ml-20'>
+        <label>Attachments</label>
+        <div>
+          <FileUpload setimageUrls={setimageUrls} setFiles={() => { }} />
+        </div>
+      </div>
+      <div className='grid grid-cols-3 gap-1 ml-44'>
+        {imageUrls.map((img: string, i: number) => (
+          <Image key={i} alt="user" loader={() => img} src={img} width={200} height={200} />
+        ))}
+      </div>
     </Modal>
   );
 };

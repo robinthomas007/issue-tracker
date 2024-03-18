@@ -8,13 +8,15 @@ import { createComment } from '@/actions/comments'
 import toast from 'react-hot-toast';
 import axios from 'axios';
 
-const { TextArea } = Input;
-
 const IssueActionForm = ({ editIssues, users }: { editIssues: any, users: any }) => {
   const user = useCurrentUser()
   const [value, setValue] = useState('');
   const [comments, setComments] = useState([]);
+  const [files, setFiles] = useState([]);
   const [imageUrls, setimageUrls] = useState<Array<string>>([])
+  const [signedUrls, setSignedUrls] = useState<Array<any>>([])
+
+  const [uploading, setUploading] = useState(false)
 
   useEffect(() => {
     fetchComments(editIssues.id)
@@ -43,15 +45,76 @@ const IssueActionForm = ({ editIssues, users }: { editIssues: any, users: any })
   };
 
   const addComment = () => {
-    createComment(value, user?.id, editIssues.id, imageUrls)
+    createComment(value, user?.id, editIssues.id, signedUrls)
       .then((data: any) => {
         toast.success(data.success)
-        fetchComments(editIssues.id)
         setimageUrls([])
+        setSignedUrls([])
+        setFiles([])
+        fetchComments(editIssues.id)
       }).catch(error => {
         toast.success(error.message)
       })
   }
+
+  useEffect(() => {
+    if (files.length > 0 && signedUrls.length > 0) {
+      if (files.length === signedUrls.length) {
+        addComment()
+      }
+    }
+  }, [signedUrls])
+
+  const uploadTos3AndSaveComment = async (file: any, url: string, formData: any, fields: any) => {
+    try {
+      const uploadResponse = await fetch(url, {
+        method: 'POST',
+        body: formData,
+      })
+      if (uploadResponse.ok) {
+        setSignedUrls((prevImageUrls: string[]) => [...prevImageUrls, { filename: file.name, contentType: file.type, url: `${uploadResponse.url}${fields.key}` }])
+      } else {
+        console.error('S3 Upload Error:', uploadResponse)
+      }
+    } catch (error) {
+
+    }
+  }
+
+  const handleSubmit = async () => {
+    if (files.length > 0) {
+      setUploading(true);
+      const toastId = toast.loading('Uploading...');
+      try {
+        const uploadPromises = files.map(async (file: any) => {
+          if (!file) {
+            alert('Please select a file to upload.')
+            return;
+          }
+          const res = await axios.post('/api/upload', { filename: file.name, contentType: file.type });
+          if (res.data && res.data.url) {
+            const { url, fields } = res.data;
+            const formData = new FormData();
+            Object.entries(fields).forEach(([key, value]) => {
+              formData.append(key, value as string);
+            });
+            formData.append('file', file);
+            await uploadTos3AndSaveComment(file, url, formData, fields);
+          }
+        });
+
+        await Promise.all(uploadPromises);
+        toast.dismiss(toastId)
+      } catch (error) {
+        toast.error('Failed to upload file.');
+      } finally {
+        setUploading(false);
+      }
+    } else {
+      addComment();
+    }
+  };
+
 
   const renderComment = () => {
     return comments.map((comment: any) => {
@@ -121,7 +184,7 @@ const IssueActionForm = ({ editIssues, users }: { editIssues: any, users: any })
           </div>
         </div>
         <div>
-          <FileUpload imageUrls={imageUrls} setimageUrls={setimageUrls} />
+          <FileUpload setimageUrls={setimageUrls} setFiles={setFiles} />
         </div>
         <div className='grid grid-cols-3 gap-1'>
           {imageUrls.map((img: string, i: number) => (
@@ -129,7 +192,7 @@ const IssueActionForm = ({ editIssues, users }: { editIssues: any, users: any })
           ))}
         </div>
         <div className='flex items-center justify-end'>
-          <Button className='ml-2' type='primary' onClick={addComment}>Comment</Button>
+          <Button className='ml-2' type='primary' onClick={handleSubmit}>Comment</Button>
         </div>
 
       </div>
