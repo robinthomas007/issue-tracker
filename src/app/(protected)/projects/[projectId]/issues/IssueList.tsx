@@ -1,7 +1,7 @@
 'use client'
 import React, { useEffect, useState } from 'react'
 import { Card, Typography } from 'antd';
-import { Row, Layout, Col, Button, Dropdown } from 'antd';
+import { Row, Layout, Col, Button, Tag } from 'antd';
 import CreateIssueModal from './createIssue'
 import ViewIssueModal from './viewIssue';
 import { FaEdit } from "react-icons/fa";
@@ -19,6 +19,11 @@ import AddUsersToProjectPopover from '@/components/projects/addUsersToProjectPop
 import { ProjectProps } from '../../page'
 import GetProjectUsers from '@/components/projects/getProjectUsers'
 import toast from 'react-hot-toast';
+import { FcHighPriority } from "react-icons/fc";
+import { FcLowPriority } from "react-icons/fc";
+import { FcMediumPriority } from "react-icons/fc";
+import { MdDeleteForever } from "react-icons/md";
+import { deleteIssueApi } from '@/actions/issues'
 
 const { TextArea } = Input;
 const { Text } = Typography;
@@ -34,6 +39,8 @@ export interface AssigneeReporterProps {
 }
 
 export interface IssueProps {
+  type: any;
+  priority: any;
   id: number,
   title: string,
   description: string,
@@ -45,27 +52,40 @@ export interface IssueProps {
   Attachment: any,
 }
 
-const DraggableListItem = ({ item, type, editIssue, handleIssueView }: any) => {
+const DraggableListItem = ({ item, type, editIssue, handleIssueView, project, deleteIssue }: any) => {
 
   const [, drag] = useDrag({
     type: '*',
     item: item,
   });
 
-  const cardHeader = <div className='flex text-slate-600 justify-between align-middle'>
-    <span>{item.title}</span>
-    <span className='flex justify-start align-middle'>
-      <MdOutlineEdit onClick={() => editIssue(item)} />
+  const prefix = project.name.substring(0, 3).toUpperCase();
+  const typeColor: any = { BUG: '#cd201f', TASK: "#87d068", ENHANCEMENT: '#108ee9' }
+  const cardHeader = <div className='flex text-slate-600 justify-between align-middle items-center group'>
+    <span className=''>{item.priority === 'LOW' ? <FcLowPriority className='text-lg' /> : item.priority === 'MEDIUM' ? <FcMediumPriority className='text-lg' /> : <FcHighPriority className='text-lg' />}</span>
+    <span className='mx-2'>{prefix}-{item.id}</span>
+    <span className='mr-auto  opacity-0 group-hover:opacity-100 transition-opacity duration-300'>
+      <MdOutlineEdit className='text-lg' onClick={() => editIssue(item)} />
+    </span>
+    <span className='flex justify-start align-middle opacity-0 group-hover:opacity-100 transition-opacity duration-300'>
+      <MdDeleteForever className='text-lg ml-1' onClick={() => deleteIssue(item)} />
     </span>
   </div>
 
   return (
     <Card size="small" ref={drag} key={item.id} title={cardHeader} bordered={false} className='min-h-40 my-2 max-h-40' style={{ marginTop: 5, padding: 0 }}>
       <p className='overflow-auto max-h-28 cursor-pointer' onClick={() => handleIssueView(item)}>
-        {item.description}
+        {item.title}
       </p>
-      {item.assignee && <div className='flex items-center mt-3rounded absolute bottom-2 w-32'>
-        <span><Image loader={() => item.assignee.image} width={30} height={10} className='rounded-full hover:border border-green-400' src={item.assignee.image} alt='user' /></span>
+      {item.assignee && <div className='flex items-center justify-between mt-3rounded absolute bottom-2 left-2 w-full'>
+        <span>
+          <Image loader={() => item.assignee.image} width={30} height={10} className='rounded-full hover:border border-green-400' src={item.assignee.image} alt='user' />
+        </span>
+        <span className='ml-auto mr-2'>
+          <Tag color={typeColor[item.type]}>
+            {item.type}
+          </Tag>
+        </span>
       </div>}
     </Card>
   );
@@ -119,8 +139,19 @@ function IssueList({ projectId }: { projectId: string }) {
   }
 
   const handleIssueView = (issue: IssueProps) => {
-    console.log("came")
     setEditIssues(issue)
+  }
+
+  const deleteIssue = async (issue: IssueProps) => {
+    const confrimDelete = confirm('Are you sure you want to delete?')
+    if (confrimDelete) {
+      const res = await deleteIssueApi(issue.id)
+      if (res.data) {
+        toast.success(res.success)
+        setEditIssues(null)
+        fetchIssues()
+      }
+    }
   }
 
   const renderIssueCard = (status: string) => {
@@ -138,6 +169,8 @@ function IssueList({ projectId }: { projectId: string }) {
         type={status}
         editIssue={editIssue}
         handleIssueView={handleIssueView}
+        project={project}
+        deleteIssue={deleteIssue}
       />
     })
   }

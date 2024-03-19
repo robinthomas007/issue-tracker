@@ -3,11 +3,11 @@ import { z } from 'zod'
 import prisma from "../../../../../../prisma/client";
 import IssueSchemaData from '@prisma/client'
 import { createAttachment } from '@/actions/upload'
+import { getUserByEmail } from "@/data/user";
 
 const createIssueSchema = z.object({
   title: z.string().min(1).max(255),
   description: z.string().min(1),
-  reporterId: z.string().min(1)
 })
 
 export async function POST(request: NextRequest, params: { params: { projectId: string } }) {
@@ -17,8 +17,25 @@ export async function POST(request: NextRequest, params: { params: { projectId: 
   if (!validation.success)
     return NextResponse.json(validation.error.format(), { status: 400 })
 
+  const reporter = await getUserByEmail(body.reporter);
+  if (!reporter) {
+    return NextResponse.json({ error: "Reporter Invalid" }, { status: 400 })
+  }
+  const assgnee = await getUserByEmail(body.assignee);
+  if (!assgnee) {
+    return NextResponse.json({ error: "Assgnee Invalid" }, { status: 400 })
+  }
+
   const newIssue = await prisma.issue.create({
-    data: { title: body.title, description: body.description, projectId: projectId, reporterId: body.reporterId }
+    data: {
+      title: body.title,
+      description: body.description,
+      projectId: projectId,
+      reporterId: reporter.id,
+      assigneeId: assgnee.id,
+      priority: body.priority,
+      type: body.type
+    }
   })
 
   if (newIssue && body.imageUrls.length > 0) {

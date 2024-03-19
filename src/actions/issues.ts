@@ -5,6 +5,8 @@ import prisma from "../../prisma/client";
 
 import { getUserByEmail } from "@/data/user";
 import { addUserToProjects } from '@/actions/projects'
+import { deleteFileFromS3 } from '@/actions/s3'
+
 export const assignIssue = async (email: string, issueId: number, projectId: number) => {
 
   const user = await getUserByEmail(email);
@@ -72,3 +74,33 @@ export const ReporterIssue = async (email: string, issueId: number, projectId: n
 
 };
 
+
+export const deleteIssueApi = async (issueId: number) => {
+  try {
+
+    const attachmentsToDelete = await prisma.attachment.findMany({
+      where: { issueId: issueId }
+    });
+
+    attachmentsToDelete.map(async (attachment) => {
+      const key = attachment?.url.split("/").pop();
+      await deleteFileFromS3(key!);
+    });
+
+    await prisma.attachment.deleteMany({
+      where: { issueId: issueId }
+    });
+
+    await prisma.comment.deleteMany({
+      where: { issueId: issueId }
+    });
+
+    const deletedIssue = await prisma.issue.delete({
+      where: { id: issueId }
+    });
+
+    return { data: deletedIssue, success: "Issue deleted successfully" };
+  } catch (error) {
+    return { error: error, message: "Error deleting issue" };
+  }
+}

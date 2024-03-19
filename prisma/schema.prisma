@@ -19,6 +19,8 @@ model Issue {
   title       String       @db.VarChar(255)
   description String       @db.Text
   status      Status       @default(SELECTED)
+  priority    Priority     @default(HIGH)
+  type        Type         @default(BUG)
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
   Project     Project?     @relation(fields: [projectId], references: [id])
@@ -41,6 +43,18 @@ enum Status {
   IN_PROGRESS
   TESTING
   CLOSED
+}
+
+enum Priority {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum Type {
+  BUG
+  ENHANCEMENT
+  TASK
 }
 
 model Project {
