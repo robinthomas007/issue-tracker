@@ -9,7 +9,7 @@ import Link from 'next/link'
 import CardMessage from '../_components/message'
 import { BeatLoader } from "react-spinners";
 
-const VarificationPage = () => {
+export default function Page() {
 
   const searchParams = useSearchParams();
   const token = searchParams.get('token')
@@ -56,5 +56,3 @@ const VarificationPage = () => {
 
   )
 }
-
-export default VarificationPage

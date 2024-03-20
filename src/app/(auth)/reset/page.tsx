@@ -14,7 +14,7 @@ type FieldType = {
   email?: string;
 };
 
-const Reset: React.FC<FieldType> = () => {
+export default function Page() {
 
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
@@ -86,5 +86,3 @@ const Reset: React.FC<FieldType> = () => {
     </Row>
   )
 }
-
-export default Reset;

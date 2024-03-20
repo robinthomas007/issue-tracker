@@ -6,7 +6,7 @@ import IssueList from './IssueList';
 
 const { Content, Sider } = Layout;
 
-function IssuePage({ params }: { params: { projectId: string } }) {
+export default function IssuePage({ params }: { params: { projectId: string } }) {
   return (
     <Layout>
       <Content className='bg-white' style={{
@@ -21,4 +21,3 @@ function IssuePage({ params }: { params: { projectId: string } }) {
   )
 }
 
-export default IssuePage
