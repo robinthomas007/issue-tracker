@@ -17,7 +17,7 @@ type FieldType = {
   email?: string;
 };
 
-const Login: React.FC<FieldType> = () => {
+export default function Page() {
 
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
@@ -106,5 +106,3 @@ const Login: React.FC<FieldType> = () => {
     </Row>
   )
 }
-
-export default Login;
