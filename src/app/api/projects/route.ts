@@ -3,10 +3,7 @@ import { z } from 'zod'
 import prisma from "../../../../prisma/client";
 import { auth } from '@/auth'
 
-const createProjectSchemaValidation = z.object({
-  name: z.string().min(1).max(255),
-  description: z.string().min(1)
-})
+import { createProjectSchemaValidation } from "@/schemas";
 
 export async function POST(request: NextRequest) {
   const body = await request.json()

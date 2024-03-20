@@ -4,10 +4,7 @@ import prisma from "../../../../../../../prisma/client";
 import { upsertAttachment } from '@/actions/upload'
 import { getUserByEmail } from "@/data/user";
 
-const createIssueSchema = z.object({
-  title: z.string().min(1).max(255),
-  description: z.string().min(1)
-})
+import { createIssueSchema } from '@/schemas'
 
 export async function PATCH(request: NextRequest, { params }: { params: { issueId: string } }) {
   const body = await request.json()

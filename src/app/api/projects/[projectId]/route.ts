@@ -2,10 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from 'zod'
 import prisma from "../../../../../prisma/client";
 import { message } from "antd";
-const createProjectSchemaValidation = z.object({
-  name: z.string().min(1).max(255),
-  description: z.string().min(1)
-})
+import { createProjectSchemaValidation } from "@/schemas";
 
 export async function PATCH(request: NextRequest, { params }: { params: { projectId: string } }) {
   const body = await request.json()

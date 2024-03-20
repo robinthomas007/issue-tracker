@@ -5,10 +5,7 @@ import IssueSchemaData from '@prisma/client'
 import { createAttachment } from '@/actions/upload'
 import { getUserByEmail } from "@/data/user";
 
-const createIssueSchema = z.object({
-  title: z.string().min(1).max(255),
-  description: z.string().min(1),
-})
+import { createIssueSchema } from '@/schemas'
 
 export async function POST(request: NextRequest, params: { params: { projectId: string } }) {
   const projectId = Number(params.params.projectId);

@@ -4,18 +4,7 @@ import prisma from "../../../../../prisma/client";
 import { getUserByEmail } from "@/data/user";
 import { signIn } from '@/auth'
 import bcrypt from 'bcryptjs'
-
-export const RegisterSchema = z.object({
-  email: z.string().email({
-    message: "Email is required",
-  }),
-  password: z.string().min(6, {
-    message: "Minimum 6 characters required",
-  }),
-  name: z.string().min(1, {
-    message: "Name is required",
-  })
-});
+import { RegisterSchema } from "@/schemas";
 
 export async function POST(request: NextRequest) {
   const body = await request.json()

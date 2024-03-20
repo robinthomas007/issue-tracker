@@ -63,3 +63,18 @@ export const RegisterSchema = z.object({
     message: "Name is required",
   }),
 });
+
+export const createProjectSchemaValidation = z.object({
+  name: z.string().min(1).max(255),
+  description: z.string().min(1)
+})
+
+export const updateIssueStatus = z.object({
+  status: z.string().min(1).max(255),
+})
+
+
+export const createIssueSchema = z.object({
+  title: z.string().min(1).max(255),
+  description: z.string().min(1)
+})

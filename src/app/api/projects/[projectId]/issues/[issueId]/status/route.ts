@@ -2,9 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from 'zod'
 import prisma from "../../../../../../../../prisma/client";
 
-const updateIssueStatus = z.object({
-    status: z.string().min(1).max(255),
-})
+import { updateIssueStatus } from '@/schemas'
 
 export async function PATCH(request: NextRequest, { params }: { params: { issueId: string } }) {
     const body = await request.json()
