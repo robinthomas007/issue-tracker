@@ -55,7 +55,6 @@ export default function Home() {
       title: 'Users',
       dataIndex: 'users',
       key: 'users',
-      className: "flex min-h-18",
       width: 300,
       render: (_, project) => {
         const len = project.users.length
