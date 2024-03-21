@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Card } from 'antd'
+import { Card, Avatar } from 'antd'
 import { assignIssue, ReporterIssue } from '@/actions/issues'
 import { IssueProps } from '@/app/(protected)/projects/[projectId]/issues/IssueList';
 import { useCurrentUser } from '@/hooks/use-current-user';
@@ -107,7 +107,8 @@ const IssueDetails = ({ issue, projectId, fetchIssues, setEditIssues }: { issue:
         <label className='flex-none w-32'>Assignee</label>
         {
           Object.keys(assignee).length !== 0 && !toggleAssignee && <div className='flex items-center w-full' onClick={() => setToggleAssignee(true)}>
-            <Image style={{ border: 1, borderRadius: 100 }} className='border-r-8' alt="user" loader={() => assignee?.image!} src={assignee.image!} width={30} height={30} />
+            {assignee?.image ? <Avatar src={assignee?.image} /> : <Avatar style={{ backgroundColor: '#f56a00' }}>{assignee.label.charAt(0)}</Avatar>}
+
             <span className='text-md font-semibold text-gray-600 ml-2'>{assignee.label}</span>
           </div>
         }
@@ -133,7 +134,7 @@ const IssueDetails = ({ issue, projectId, fetchIssues, setEditIssues }: { issue:
         <label className='flex-none w-32'>Reporter</label>
         {
           issue.reporter && !toggleReporter && <div className='flex items-center w-full' onClick={() => setToggleReporter(true)}>
-            <Image style={{ border: 1, borderRadius: 100 }} className='border-r-8' alt="user" loader={() => issue.reporter?.image!} src={issue.reporter.image!} width={30} height={30} />
+            {issue.reporter?.image ? <Avatar src={issue.reporter?.image} /> : <Avatar style={{ backgroundColor: '#f56a00' }}>{issue.reporter.name.charAt(0)}</Avatar>}
             <span className='text-md font-semibold text-gray-600 ml-2'>{issue.reporter.name}</span>
           </div>
         }

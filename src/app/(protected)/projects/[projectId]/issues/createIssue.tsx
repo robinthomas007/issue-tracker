@@ -262,7 +262,7 @@ const CreateIssueModal: React.FC<IssueModalProps> = ({ isModalOpen, handleOk, ha
             <span className='absolute top-1 cursor-pointer left-44 bg-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300'>
               <IoMdCloseCircle className='text-lg' onClick={() => deleteImage(img)} />
             </span>
-            <Image alt="user" loader={() => img} src={img} width={200} height={200} className='h-full' />
+            <img alt="user" src={img} width={200} height={200} className='h-full' />
           </div>
         ))}
       </div>

@@ -19,7 +19,7 @@ export const assignIssue = async (email: string, issueId: number, projectId: num
   try {
     const projects = await prisma.project.findMany({
       where: {
-        users: {
+        id: projectId, users: {
           some: { email: email }
         }
       }

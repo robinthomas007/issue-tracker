@@ -73,13 +73,13 @@ const DraggableListItem = ({ item, type, editIssue, handleIssueView, project, de
   </div>
 
   return (
-    <Card size="small" ref={drag} key={item.id} title={cardHeader} bordered={false} className='min-h-40 my-2 max-h-40' style={{ marginTop: 5, padding: 0 }}>
-      <p className='overflow-auto max-h-28 cursor-pointer' onClick={() => handleIssueView(item)}>
+    <Card size="small" ref={drag} key={item.id} title={cardHeader} onClick={() => handleIssueView(item)} bordered={false} className='min-h-40 my-2 max-h-40 bg-cyan-100' style={{ marginTop: 5, padding: 0 }}>
+      <p className='overflow-auto max-h-28 cursor-pointer'>
         {item.title}
       </p>
       {item.assignee && <div className='flex items-center justify-between mt-3rounded absolute bottom-2 left-2 w-full'>
         <span>
-          <Image loader={() => item.assignee.image} width={30} height={10} className='rounded-full hover:border border-green-400' src={item.assignee.image} alt='user' />
+          <img width={30} height={10} className='rounded-full hover:border border-green-400' src={item.assignee.image} alt='user' />
         </span>
         <span className='ml-auto mr-2'>
           <Tag color={typeColor[item.type]}>
@@ -110,6 +110,7 @@ function IssueList({ projectId }: { projectId: string }) {
         const response = await axios.get(`/api/projects/${projectId}/issues`);
         setProject(response.data)
         setIssues(response.data.issues)
+        setEditIssues(response.data.issues[0])
       } catch (e) {
         console.log(e)
       }
@@ -233,6 +234,17 @@ function IssueList({ projectId }: { projectId: string }) {
     { refElm: close, status: 'CLOSED', label: 'Done' }
   ];
 
+  const filterIssues = (e: any) => {
+    const search = e.target.value
+    const searchedIssues = project?.issues.filter((is: any) => is.title?.includes(search) || is.description?.includes(search))
+    setIssues(searchedIssues)
+    if (search.length === 0) {
+      console.log(project, ":project")
+      if (project?.issues)
+        setIssues(project?.issues!)
+    }
+  }
+
   const updatingIssue = issues.find((issue) => issue.id === editIssues?.id)
 
   return (
@@ -251,7 +263,7 @@ function IssueList({ projectId }: { projectId: string }) {
       <Row justify={'start'} className='pb-2 items-center'>
         <Col span={16}>
           <div className='flex justify-start'>
-            <Input className='max-w-80' placeholder='Search' />
+            <Input className='max-w-80' placeholder='Search' onChange={(e) => filterIssues(e)} />
             <div className='flex items-center ml-6'>
               <GetProjectUsers project={project!} />
             </div>
@@ -285,7 +297,7 @@ function IssueList({ projectId }: { projectId: string }) {
                   {updatingIssue?.Attachment.map((attachment: any) => {
                     return (
                       <div key={attachment.id} className=' my-5'>
-                        <Image style={{ border: 1 }} className='' alt="user" loader={() => attachment.url} src={attachment.url} width={400} height={200} />
+                        <img style={{ border: 1 }} className='' alt="user" src={attachment.url} width={400} height={200} />
                       </div>
                     )
                   })}

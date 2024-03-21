@@ -13,7 +13,7 @@ export const {
 } = NextAuth({
   pages: {
     signIn: "/login",
-    // error: "/error",
+    error: "/error",
   },
   events: {
     async linkAccount({ user }) {
@@ -26,7 +26,6 @@ export const {
   callbacks: {
     async signIn({ user, account }) {
 
-      console.log(user, account, "======111")
       // Allow OAuth without email verification
       if (account?.provider !== "credentials") return true;
       if (user.id) {
@@ -48,8 +47,6 @@ export const {
       return true;
     },
     async session({ token, session }) {
-
-      console.log(token, session, "======session")
 
       if (token.sub && session.user) {
         session.user.id = token.sub;
@@ -73,7 +70,6 @@ export const {
     },
     async jwt({ token }) {
 
-      console.log(token, 'tokentokentoken')
       if (!token.sub) return token;
 
       const existingUser = await getUserById(token.sub);

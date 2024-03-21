@@ -4,6 +4,7 @@ import prisma from "../../../../../../prisma/client";
 import IssueSchemaData from '@prisma/client'
 import { createAttachment } from '@/actions/upload'
 import { getUserByEmail } from "@/data/user";
+import { addUserToProjects } from '@/actions/projects'
 
 import { createIssueSchema } from '@/schemas'
 
@@ -35,8 +36,10 @@ export async function POST(request: NextRequest, params: { params: { projectId: 
     }
   })
 
+  addUserToProjects([assgnee?.email!, reporter?.email!], projectId)
+
   if (newIssue && body.imageUrls.length > 0) {
-    const newAttachment = await createAttachment(body.imageUrls, newIssue.id)
+    await createAttachment(body.imageUrls, newIssue.id)
   }
 
   return NextResponse.json(newIssue, { status: 201 })

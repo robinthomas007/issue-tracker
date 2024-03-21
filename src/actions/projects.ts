@@ -8,6 +8,7 @@ export const addUserToProjects = async (emails: Array<string>, projectId: number
   const assignedUsers = await prisma.user.findMany({
     where: { email: { in: emails, not: null } }
   })
+
   try {
     const updateProjectUsers = await prisma.project.update({
       where: { id: Number(projectId) },

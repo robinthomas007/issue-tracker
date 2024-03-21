@@ -1,6 +1,6 @@
 'use client'
 import React, { useEffect, useState } from 'react'
-import { Row, Layout, Col, Button, Typography, Table, Dropdown, Space, Tooltip } from 'antd';
+import { Row, Layout, Col, Button, Typography, Table, Dropdown, Space, Avatar } from 'antd';
 import CreateProjectModal from './createProject'
 import axios from 'axios';
 import type { TableProps } from 'antd';
@@ -22,6 +22,7 @@ export interface ProjectProps {
   users: any,
   createdAt: string,
   updatedAt: string
+  issues: any
 }
 
 export default function Home() {
@@ -48,6 +49,7 @@ export default function Home() {
       title: 'Description',
       dataIndex: 'description',
       key: 'description',
+      width: 600
     },
     {
       title: 'Users',
@@ -57,15 +59,6 @@ export default function Home() {
       width: 300,
       render: (_, project) => {
         const len = project.users.length
-        const imgCount = 1
-        const items = project.users.slice(imgCount).map((user: any) => ({
-          'key': user.id,
-          'label': <div className='flex items-center'>
-            <span><Image loader={() => user.image} width={40} height={10} className='rounded-full hover:border border-green-400' src={user.image} alt='user' /></span>
-            <span className='ml-2'>{user.name}</span>
-          </div>
-        }))
-
         return <div className='flex items-center w-full'>
           <GetProjectUsers project={project} />
           <div className='ml-auto'>

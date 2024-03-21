@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Space, Button, Form, Input, Card } from 'antd';
+import { Space, Button, Form, Input, Avatar } from 'antd';
 import { useCurrentUser } from '@/hooks/use-current-user';
 import Image from 'next/image'
 import { MentionsInput, Mention } from 'react-mentions';
@@ -145,8 +145,8 @@ const IssueActionForm = ({ editIssues, users }: { editIssues: any, users: any })
       return (
         <div key={comment.id} className='my-3'>
           <div className='flex items-start'>
-            <div>
-              <Image style={{ border: 1, borderRadius: 100 }} className='border-r-8 mr-2' alt="user" loader={() => comment.User.image} src={comment.User.image} width={30} height={30} />
+            <div className='mr-2'>
+              {comment.User.image ? <Avatar src={comment.User.image} /> : <Avatar style={{ backgroundColor: '#f56a00' }}>{comment.User.name!.charAt(0)}</Avatar>}
             </div>
             <div className='font-semibold'>{comment.User.name}</div>
             <div className='ml-5 text-gray-500'>12 Hours ago</div>
@@ -160,7 +160,7 @@ const IssueActionForm = ({ editIssues, users }: { editIssues: any, users: any })
             {comment.Attachment.map((attachment: any) => {
               return (
                 <div key={attachment.id} className='ml-10 my-5'>
-                  <Image style={{ border: 1 }} className='mr-2' alt="user" loader={() => attachment.url} src={attachment.url} width={200} height={200} />
+                  {attachment.url && <Image alt="user" loader={() => attachment.url} src={attachment.url} width={200} height={200} className='h-full' />}
                 </div>
               )
             })}
@@ -178,7 +178,9 @@ const IssueActionForm = ({ editIssues, users }: { editIssues: any, users: any })
           {renderComment()}
         </div>
         <div className='flex items-center my-2'>
-          <Image style={{ border: 1, borderRadius: 100 }} className='border-r-8 mr-2' alt="user" loader={() => user?.image!} src={user?.image!} width={30} height={30} />
+          <div className='mr-2'>
+            {user?.image ? <Avatar src={user?.image} /> : <Avatar style={{ backgroundColor: '#f56a00' }}>{user?.name!.charAt(0)}</Avatar>}
+          </div>
           <div className='border w-full p-2'>
             <MentionsInput
               value={value}
@@ -198,7 +200,7 @@ const IssueActionForm = ({ editIssues, users }: { editIssues: any, users: any })
                 renderSuggestion={(suggestion: any, search: any, highlightedDisplay: any) => {
                   return (
                     <div className='flex items-center m-2'>
-                      <Image style={{ border: 1, borderRadius: 100 }} className='border-r-8 mr-2' alt="user" loader={() => suggestion.image} src={suggestion.image} width={30} height={30} />
+                      {suggestion?.image ? <Avatar src={suggestion.image} /> : <Avatar style={{ backgroundColor: '#f56a00' }}>{suggestion.display.charAt(0)}</Avatar>}
                       <span className=''>{suggestion.display}</span>
                     </div>
                   )
@@ -216,7 +218,7 @@ const IssueActionForm = ({ editIssues, users }: { editIssues: any, users: any })
               <span className='absolute top-1 cursor-pointer left-44 bg-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300'>
                 <IoMdCloseCircle className='text-lg' onClick={() => deleteImage(img)} />
               </span>
-              <Image alt="user" loader={() => img} src={img} width={200} height={200} className='h-full' />
+              {img && <Image alt="user" loader={() => img} src={img} width={200} height={200} className='h-full' />}
             </div>
           ))}
         </div>
