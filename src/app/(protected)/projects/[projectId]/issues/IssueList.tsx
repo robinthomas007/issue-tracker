@@ -251,67 +251,65 @@ function IssueList({ projectId }: { projectId: string }) {
     <>
       {isModalOpen && <CreateIssueModal issue={editIssues} isModalOpen={isModalOpen} handleOk={handleOk} handleCancel={handleCancel} />}
       {isViewModalOpen && <ViewIssueModal issue={editIssues} isModalOpen={isViewModalOpen} handleCancel={handleCancelView} />}
-      <Row justify={'space-between'} className='pb-4'>
+      <Row justify="space-between" className="pb-4">
         <Col>
           <Title level={2}>{project?.name}</Title>
         </Col>
         <Col>
-          <Button type='primary' onClick={() => { setEditIssues(null); setIsModalOpen(true) }}>Create Issue</Button>
+          <Button type="primary" onClick={() => { setEditIssues(null); setIsModalOpen(true) }}>Create Issue</Button>
         </Col>
       </Row>
 
-      <Row justify={'start'} className='pb-2 items-center'>
-        <Col span={16}>
-          <div className='flex justify-start'>
-            <Input className='max-w-80' placeholder='Search' onChange={(e) => filterIssues(e)} />
-            <div className='flex items-center ml-6'>
+      <Row justify="start" className="pb-2 items-center">
+        <Col xs={24} sm={16}>
+          <div className="flex justify-start">
+            <Input className="max-w-80" placeholder="Search" onChange={(e) => filterIssues(e)} />
+            <div className="flex items-center ml-6">
               <GetProjectUsers project={project!} />
             </div>
-            <div className='ml-auto mr-4'>
+            <div className="ml-auto mr-4">
               <AddUsersToProjectPopover project={project!} afterSaveFn={fetchIssues} />
             </div>
           </div>
         </Col>
-        <Col span={11}>
-
-        </Col>
+        <Col xs={0} sm={8}></Col> {/* Placeholder for responsiveness */}
       </Row>
-      <Row>
-        <Col span={16}>
+      <Row gutter={[16, 16]}>
+        <Col xs={24} sm={16}>
           <Stats issues={issues} />
-          <div className="grid grid-cols-5 gap-2 mr-4">
-            {statuses.map((s, i) => {
-              return <div key={s.status} ref={s.refElm} style={{ minHeight: '600px' }} className="w-full max-w bg-gray-100 border border-gray-200 rounded-lg shadow sm:p-2 min-h-30 h-30">
-                <p className='text-gray-600 font-semibold px-1 py-1 uppercase'>{s.label}</p>
+          <div className="grid grid-cols-1 sm:grid-cols-5 gap-2 mr-4">
+            {statuses.map((s, i) => (
+              <div key={s.status} ref={s.refElm} style={{ minHeight: '600px' }} className="w-full max-w bg-gray-100 border border-gray-200 rounded-lg shadow p-2">
+                <p className="text-gray-600 font-semibold px-1 py-1 uppercase">{s.label}</p>
                 {renderIssueCard(s.status)}
               </div>
-            })}
+            ))}
           </div>
         </Col>
-        {editIssues && <Col span={8}>
-          <div className="grid grid-cols-1 gap-2 mb-6">
-            <div className='col-span-2 border-l-2 px-4'>
-              <Card title={editIssues?.title}>
-                <p>{editIssues?.description}</p>
-                <div className='grid grid-cols-2 gap-4'>
-                  {updatingIssue?.Attachment.map((attachment: any) => {
-                    return (
-                      <div key={attachment.id} className=' my-5'>
-                        <img style={{ border: 1 }} className='' alt="user" src={attachment.url} width={400} height={200} />
+        {editIssues && (
+          <Col xs={24} sm={8}>
+            <div className="grid grid-cols-1 gap-2 mb-6">
+              <div className="border-l-2 px-4">
+                <Card title={editIssues?.title}>
+                  <p>{editIssues?.description}</p>
+                  <div className="grid grid-cols-2 gap-4">
+                    {updatingIssue?.Attachment.map((attachment: any) => (
+                      <div key={attachment.id} className="my-5">
+                        <img style={{ border: 1 }} className="" alt="user" src={attachment.url} width={400} height={200} />
                       </div>
-                    )
-                  })}
-                </div>
-              </Card>
+                    ))}
+                  </div>
+                </Card>
+              </div>
+              <div className="border-l-2 px-4">
+                <IssueDetails issue={updatingIssue!} projectId={project?.id!} setEditIssues={setEditIssues} fetchIssues={fetchIssues} />
+              </div>
             </div>
-            <div className='col-span-2 border-l-2 px-4'>
-              <IssueDetails issue={updatingIssue!} projectId={project?.id!} setEditIssues={setEditIssues} fetchIssues={fetchIssues} />
+            <div className="border-l-2 p-4">
+              <IssueActionForm editIssues={editIssues} users={project?.users} />
             </div>
-          </div>
-          <div className='col-span-2 border-l-2 p-4'>
-            <IssueActionForm editIssues={editIssues} users={project?.users} />
-          </div>
-        </Col>}
+          </Col>
+        )}
       </Row>
     </>
   )

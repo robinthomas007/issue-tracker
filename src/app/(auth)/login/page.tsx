@@ -56,12 +56,12 @@ export default function Page() {
   };
 
   return (
-    <Row justify={'center'} className='w-full'>
-      <Col span={6}>
-        <Card title={<CarHeader title="Login" />} bordered={true} className='w-full shadow-xl'>
+    <Row justify="center" className="w-full">
+      <Col xs={22} sm={20} md={16} lg={12} xl={6}>
+        <Card title={<CarHeader title="Login" />} bordered className="w-full shadow-xl">
           <Form
             name="basic"
-            style={{ maxWidth: 600 }}
+            style={{ maxWidth: '100%' }}
             initialValues={{ remember: true }}
             onFinish={onFinish}
             onFinishFailed={onFinishFailed}
@@ -74,7 +74,7 @@ export default function Page() {
               rules={[{ required: true, message: 'Please input your email!' }]}
               labelCol={{ span: 24 }}
               style={{ marginBottom: 0 }}
-              className='font-semibold'
+              className="font-semibold"
             >
               <Input />
             </Form.Item>
@@ -85,24 +85,26 @@ export default function Page() {
               rules={[{ required: true, message: 'Please input your password!' }]}
               labelCol={{ span: 24 }}
               style={{ marginBottom: 0 }}
-              className='font-semibold'
+              className="font-semibold"
             >
               <Input.Password />
             </Form.Item>
             <Button type="link" style={{ padding: 0 }}>
-              <Link href='/reset' className='text-blue-900'>Reset password</Link>
+              <Link href="/reset" className="text-blue-900">
+                Reset password
+              </Link>
             </Button>
 
-            <Form.Item >
-              <Button disabled={isPending} type="primary" htmlType="submit" className='w-full mt-4'>
+            <Form.Item>
+              <Button disabled={isPending} type="primary" htmlType="submit" className="w-full mt-4">
                 Login
               </Button>
             </Form.Item>
           </Form>
-          {(success || error) && <CardMessage message={success ? success : error} type={success ? 'success' : 'error'} />}
+          {success || error ? <CardMessage message={success ? success : error} type={success ? 'success' : 'error'} /> : null}
           <CardFooter link="/signup" />
         </Card>
       </Col>
     </Row>
-  )
+  );
 }

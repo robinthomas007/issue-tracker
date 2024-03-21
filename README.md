@@ -37,3 +37,12 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+
+## Refferences - resend email service
+
+https://resend.com/domains/d70d3017-041d-49f3-8dc1-e165341309a3
+
+
+## Refferences - database
+
+https://console.neon.tech/
